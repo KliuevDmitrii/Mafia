@@ -22,9 +22,13 @@ def test_open_page(browser):
     assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
     
 
-# @pytest.mark.parametrize("email, password", [
-#     ("qa@test.com", "Qwerty1234!")
-# ])
-# def test_empty_fild(browser, email, password):
-#     form_page = FormPage(browser)
-#     form_page.
+@pytest.mark.parametrize("email, password", [
+    ("qa@tester.com", "Qwerty1234!")
+])
+def test_login_user(browser, email, password):
+    login_page = LoginPage(browser)
+    login_page.get()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+    assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
