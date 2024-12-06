@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from pages.MainPage import MainPage
+from pages.SignupPage import SignupPage
 from pages.LoginPage import LoginPage
 
 @pytest.fixture
@@ -32,3 +33,23 @@ def test_login_user(browser, email, password):
     login_page.enter_password(password)
     login_page.click_button_log_in()
     assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
+
+@pytest.mark.parametrize("email, password, confirm_password, user_name", [
+    ("qa4@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+])
+def test_create_new_account(browser, email, password, confirm_password, user_name):
+    signup_page = SignupPage(browser)
+    signup_page.get()
+    signup_page.create_new_accaunt()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(confirm_password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_tipe_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+    signup_page.verify_username_displayed(user_name)
+    
