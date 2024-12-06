@@ -15,7 +15,6 @@ class SignupPage:
 
     def enter_email(self, email):
         try:
-            # Ожидаем, пока поле ввода email станет доступным для взаимодействия
             element = WebDriverWait(self._driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[@class='InputContainer_i1fs9mej']//label[contains(text(),'Email')]/following-sibling::input"))
             )
