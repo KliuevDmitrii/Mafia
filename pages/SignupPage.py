@@ -42,11 +42,17 @@ class SignupPage:
         
     def account_tipe_personal(self):
         self._driver.find_element(By.XPATH, "//div[@class='RightIconContainer_r155e2tn' and contains(@style, '--r155e2tn-0: pointer;')]").click()
-        self._driver.find_element(By.XPATH, "//div[@class='DropdownContent_d1prohsz' and text()='Personal']").click()
+        element = WebDriverWait(self._driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[@class='DropdownContent_d1prohsz' and text()='Personal']"))
+        )
+        element.click()
 
     def account_tipe_organization(self):
         self._driver.find_element(By.XPATH, "//div[@class='RightIconContainer_r155e2tn' and contains(@style, '--r155e2tn-0: pointer;')]").click()
-        self._driver.find_element(By.XPATH, "//div[@class='DropdownContent_d1prohsz' and text()='Organization']").click()
+        element = WebDriverWait(self._driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[@class='DropdownContent_d1prohsz' and text()='Organization']"))
+        )
+        element.click()
 
     def choose_username(self, user_name):
             element = self._driver.find_element(By.XPATH, "//div[@class='InputContainer_i1fs9mej' and contains(@style, '--i1fs9mej-0: fit-content;')]//input[@type='text' and @required='' and @class='StyledInput_s1mzwy3' and contains(@style, '--s1mzwy3-0: #0a0a0a;')]")
