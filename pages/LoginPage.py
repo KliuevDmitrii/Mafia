@@ -27,7 +27,6 @@ class LoginPage:
 
     def click_new_call_button(self):
         try:
-        # Ожидание до 10 секунд появления активной кнопки с заданным цветом и классом
             button = WebDriverWait(self._driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, 
                 "//button[@color='#fff' and contains(@class, 'StyledButton_s17mzjxz') and not(@disabled)]"))

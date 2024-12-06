@@ -56,7 +56,7 @@ class SignupPage:
     def on_checkbox_privacy_policy(self):
         try:
             checkbox = WebDriverWait(self._driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//input[@type='checkbox' and @class='Input_ibchkz5' and contains(@style, '--ibchkz5-0: pointer;')]"))
+                EC.element_to_be_clickable((By.XPATH, "//div[@class='InputContainer_i1mga30s' and contains(@style, '--i1mga30s-0: 0.5rem;')]//input[@type='checkbox' and @class='Input_ibchkz5' and contains(@style, '--ibchkz5-0: pointer;') and not(@checked)]"))
         )
             checkbox.click()
         except TimeoutException:
