@@ -35,7 +35,7 @@ def test_login_user(browser, email, password):
     assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
 
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qatester4@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+    ("qatester5@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
 ])
 def test_create_new_account(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)

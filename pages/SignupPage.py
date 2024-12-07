@@ -16,7 +16,10 @@ class SignupPage:
     def enter_email(self, email):
         try:
             element = WebDriverWait(self._driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[@class='InputContainer_i1fs9mej']//label[contains(text(),'Email')]/following-sibling::input"))
+                EC.element_to_be_clickable((By.XPATH, 
+                                            "//div[@class='InputContainer_i1fs9mej']"
+                                            "//label[contains(text(),'Email')]"
+                                            "/following-sibling::input"))
             )
             element.clear()
             element.send_keys(email)
@@ -25,18 +28,21 @@ class SignupPage:
             raise
 
     def enter_password(self, password):
-        element = self._driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")
+        element = self._driver.find_element(By.XPATH, 
+                                            "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")
         element.clear()
         element.send_keys(password)
 
     def confirm_password(self, password):
-        element = self._driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='off' and contains(@class, 'StyledInput_s1mzwy3')]")
+        element = self._driver.find_element(By.XPATH, 
+                                            "//input[@type='password' and @autocomplete='off' and contains(@class, 'StyledInput_s1mzwy3')]")
         element.clear()
         element.send_keys(password)
 
     def click_button_create_account(self):
         WebDriverWait(self._driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'StyledButton_s17mzjxz') and @color='#fff' and text()='Create account' and not(@disabled)]"))
+        EC.element_to_be_clickable((By.XPATH, 
+                                    "//button[contains(@class, 'StyledButton_s17mzjxz') and @color='#fff' and text()='Create account' and not(@disabled)]"))
     ).click()
         
     def account_tipe_personal(self):
@@ -54,14 +60,18 @@ class SignupPage:
         element.click()
 
     def choose_username(self, user_name):
-            element = self._driver.find_element(By.XPATH, "//div[@class='InputContainer_i1fs9mej' and contains(@style, '--i1fs9mej-0: fit-content;')]//input[@type='text' and @required='' and @class='StyledInput_s1mzwy3' and contains(@style, '--s1mzwy3-0: #0a0a0a;')]")
+            element = self._driver.find_element(By.XPATH, 
+                                                '//*[@id="root"]/div[2]/div/div/div/'
+                                                'div/div/div[2]/div[3]/div/div/input'
+                                                )
             element.clear()
             element.send_keys(user_name)
 
     def on_checkbox_privacy_policy(self):
         try:
             checkbox = WebDriverWait(self._driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[@class='InputContainer_i1mga30s' and contains(@style, '--i1mga30s-0: 0.5rem;')]//input[@type='checkbox' and @class='Input_ibchkz5' and contains(@style, '--ibchkz5-0: pointer;') and not(@checked)]"))
+                EC.element_to_be_clickable((By.XPATH, 
+                                            "//*[@id='root']/div[2]/div/div/div/div/div/div[2]/div[4]/div[1]/div/div/input"))
         )
             checkbox.click()
         except TimeoutException:
@@ -69,7 +79,8 @@ class SignupPage:
             raise
 
     def on_checkbox_community_guidelines(self):
-        chekbox = self._driver.find_element(By.XPATH, "//input[@type='checkbox' and @class='Input_ibchkz5' and contains(@style, '--ibchkz5-0: pointer;')]")
+        chekbox = self._driver.find_element(By.XPATH,
+                                             "//*[@id='root']/div[2]/div/div/div/div/div/div[2]/div[5]/div[1]/div/div/input")
         chekbox.click()
 
     def click_button_continue(self):
