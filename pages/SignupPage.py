@@ -68,19 +68,17 @@ class SignupPage:
             element.send_keys(user_name)
 
     def on_checkbox_privacy_policy(self):
-        try:
-            checkbox = WebDriverWait(self._driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, 
-                                            "//*[@id='root']/div[2]/div/div/div/div/div/div[2]/div[4]/div[1]/div/div/input"))
-        )
-            checkbox.click()
-        except TimeoutException:
-            print("Чекбокс не стал доступен для клика в течение 10 секунд.")
-            raise
+        checkbox = self._driver.find_element(
+                By.XPATH,
+                '//*[@id="root"]/div[2]/div/div/div/div/div/div[2]/div[4]/div[1]/div/div/input'
+            )
+        checkbox.click()
 
     def on_checkbox_community_guidelines(self):
-        chekbox = self._driver.find_element(By.XPATH,
-                                             "//*[@id='root']/div[2]/div/div/div/div/div/div[2]/div[5]/div[1]/div/div/input")
+        chekbox = self._driver.find_element(
+            By.XPATH,
+            '//*[@id="root"]/div[2]/div/div/div/div/div/div[2]/div[5]/div[1]/div/div/input'
+        )
         chekbox.click()
 
     def click_button_continue(self):
