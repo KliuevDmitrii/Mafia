@@ -35,9 +35,9 @@ def test_login_user(browser, email, password):
     assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
 
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qatester5@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+    ("qatests217@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
 ])
-def test_create_new_account(browser, email, password, confirm_password, user_name):
+def test_create_new_account_personal_without_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
     signup_page.get()
     signup_page.create_new_accaunt()
@@ -51,5 +51,24 @@ def test_create_new_account(browser, email, password, confirm_password, user_nam
     signup_page.on_checkbox_community_guidelines()
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
-    signup_page.verify_username_displayed(user_name)
+    assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
     
+@pytest.mark.parametrize("email, password, confirm_password, user_name", [
+    ("qates@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+])
+def test_create_new_account_organization_without_avatar(browser, email, password, confirm_password, user_name):
+    signup_page = SignupPage(browser)
+    signup_page.get()
+    signup_page.create_new_accaunt()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(confirm_password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_tipe_organization()
+    signup_page.on_checkbox_privacy_policy()
+    sleep(7)
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+    assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
