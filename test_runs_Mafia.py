@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.MainPage import MainPage
 from pages.SignupPage import SignupPage
 from pages.LoginPage import LoginPage
+from pages.ResetPasswordPage import ResetPasswordPage
 
 @pytest.fixture
 def browser():
@@ -104,7 +105,8 @@ def test_create_new_account_organization_without_avatar(browser, email, password
     ("qa@@tester.com", "Qwerty1234!"),
     ("qа@tester.com", "Qwerty1234!"),
     ("q", "Qwerty1234!"),
-    ("qa@tester.com ", "Qwerty1234!")
+    ("qa@tester.com ", "Qwerty1234!"),
+    ("", "Qwerty1234!")
 ])
 def test_invalid_email(browser, email):
     login_page = LoginPage(browser)
@@ -115,7 +117,8 @@ def test_invalid_email(browser, email):
     assert error_text == "Invalid Email Format", f"Ожидали текст ошибки 'Invalid Email Format', получили '{error_text}'"
 
 @pytest.mark.parametrize("email, password", [
-    ("qa@@tester.com", "Qwerty1234!")
+    ("qa@@tester.com", "Qwerty1234!"),
+    ("qa@tester.com ", "")
 ])
 def test_login_user_invalid_email(browser, email, password):
     login_page = LoginPage(browser)
@@ -124,3 +127,15 @@ def test_login_user_invalid_email(browser, email, password):
     login_page.enter_password(password)
 
     assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
+
+@pytest.mark.parametrize("email", [
+    ("qa@tester.com")
+])
+def test_positive_reset_password(browser, email):
+    reset_page = ResetPasswordPage(browser)
+    reset_page.get()
+    reset_page.forgot_password()
+    reset_page.enter_email(email)
+    reset_page.click_button_reset_password()
+
+    assert reset_page.popup() == "We have sent you instructions to change your password by email.", "Инструкция не отправлена на указанный email"
