@@ -139,3 +139,30 @@ def test_positive_reset_password(browser, email):
     reset_page.click_button_reset_password()
 
     assert reset_page.popup() == "We have sent you instructions to change your password by email.", "Инструкция не отправлена на указанный email"
+
+@pytest.mark.parametrize("email", [
+    ("qa@tester.co")
+])
+def test_negative_reset_password_not_user_email(browser, email):
+    reset_page = ResetPasswordPage(browser)
+    reset_page.get()
+    reset_page.forgot_password()
+    reset_page.enter_email(email)
+    reset_page.click_button_reset_password()
+
+    assert reset_page.popup_alert()
+
+@pytest.mark.parametrize("email", [
+    ("qa@testercom"),
+    ("qa@@tester.com"),
+    ("qа@tester.com"),
+    ("@tester.com"),
+    (("qatester.com"))
+])
+def test_negative_reset_password_invalid_email(browser, email):
+    reset_page = ResetPasswordPage(browser)
+    reset_page.get()
+    reset_page.forgot_password()
+    reset_page.enter_email(email)
+
+    assert reset_page.button_reset_password_disabled(), "Кнопка сброса пароля активна после ввода невалидного email"

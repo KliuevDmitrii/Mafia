@@ -37,6 +37,19 @@ class ResetPasswordPage:
             ))
     ).click()
         
+    def button_reset_password_disabled(self):
+        try:
+            button = WebDriverWait(self._driver, 10).until(
+                EC.presence_of_element_located((
+                By.XPATH, 
+                "//button[@class='StyledButton_s17mzjxz' and normalize-space(text())='Reset password']"
+            ))
+        )
+            return button.get_attribute("disabled") is not None
+        except TimeoutException:
+            print("Кнопка сброса пароля не найдена.")
+            return False
+        
     def popup(self):
         try:
             popup = WebDriverWait(self._driver, 10).until(
@@ -46,5 +59,17 @@ class ResetPasswordPage:
                 ))
             )
             return popup.text
+        except TimeoutException:
+            return None
+        
+    def popup_alert(self):
+        try:
+            popup = WebDriverWait(self._driver, 10).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    "//div[@role='alert']"
+                ))
+            )
+            return popup
         except TimeoutException:
             return None
