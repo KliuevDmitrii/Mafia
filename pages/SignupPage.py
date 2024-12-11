@@ -62,7 +62,7 @@ class SignupPage:
         element = WebDriverWait(self._driver, 10).until(
                 EC.element_to_be_clickable((
                     By.XPATH, 
-                    "//div[@class='DropdownContent_d1prohsz' and text()='Personal']"))
+                    '//div[@class="DropdownContent_d1prohsz" and text()="Personal"]'))
         )
         element.click()
 
@@ -74,7 +74,7 @@ class SignupPage:
         element = WebDriverWait(self._driver, 10).until(
                 EC.element_to_be_clickable((
                     By.XPATH, 
-                    '//*[@id="root"]/div[2]/div/div/div/div/div/div[2]/div[2]/div[2]/div/div[1]/div'))
+                    '//*[@id="root"]/div[2]/div/div/div/div/div/div[2]/div[2]/div[2]/ul/li[1]'))
         )
         element.click()
 
@@ -112,6 +112,12 @@ class SignupPage:
                     By.XPATH,
                     "//button[text()='Continue without an avatar']")
         button.click()
+    
+    def click_button_continue_step_2(self):
+        button = self._driver.find_element(
+                    By.XPATH,
+                    '//button[@class="StyledButton_s17mzjxz" and text()="Continue"]')
+        button.click()
 
     def is_username_displayed(self, user_name):
         try:
@@ -123,4 +129,18 @@ class SignupPage:
             return displayed_name.is_displayed()
         except TimeoutException:
            return False
-    
+
+    def add_avatar_photo(self, file_path: str):
+        button = self._driver.find_element(
+        By.XPATH,
+        '//button[@class="StyledButton_s17mzjxz" and text()="Upload an avatar photo"]'
+        )
+        button.click()
+        
+        file_input = WebDriverWait(self._driver, 10).until(
+        EC.presence_of_element_located((
+            By.XPATH,
+            '//input[@type="file"]'))
+    )
+        file_input.send_keys(file_path)
+
