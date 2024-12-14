@@ -37,8 +37,22 @@ def test_login_user(browser, email, password):
 
     assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
 
+@pytest.mark.parametrize("email, password", [
+    ("qa@tester.com", "Qwerty1234!")
+])
+def test_log_out_user(browser, email, password):
+    login_page = LoginPage(browser)
+    login_page.get()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+    login_page.click_button_log_out()
+
+    assert login_page.click_new_call_button(), "Кнопка нового звонка присутствует на странице"
+
+
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qatests33@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+    ("qate234sts33@tes34ter.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
 def test_create_new_account_personal_without_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
