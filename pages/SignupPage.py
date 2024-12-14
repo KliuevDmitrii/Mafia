@@ -54,7 +54,7 @@ class SignupPage:
             ))
     ).click()
         
-    def account_tipe_personal(self):
+    def account_type_personal(self):
         self._driver.find_element(
             By.XPATH,
             '//div[@cursor="pointer" and contains(@class, "RightIconContainer_r155e2tn")]'
@@ -66,7 +66,7 @@ class SignupPage:
         )
         element.click()
 
-    def account_tipe_organization(self):
+    def account_type_organization(self):
         self._driver.find_element(
             By.XPATH,
             '//div[@cursor="pointer" and contains(@class, "RightIconContainer_r155e2tn")]'
