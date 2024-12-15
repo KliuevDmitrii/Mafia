@@ -12,9 +12,17 @@ class MainPage:
     def is_page_loaded(self):
         try:
             WebDriverWait(self._driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//h2[contains(@class, 'GamesTitle_g6v8k93') and text()='Games on Ludio']"))
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    "//h2[contains(@class, 'GamesTitle_g6v8k93') and text()='Games on Ludio']"))
             )
             return True
         except:
             return False
     
+    def click_name_user(self):
+        name_user = WebDriverWait(self._driver, 10).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    '//div[@class="NameAndPayInfoContainer_n2ot533"]'))
+            ).click()

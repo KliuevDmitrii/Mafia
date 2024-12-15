@@ -14,6 +14,7 @@ class LoginPage:
         element = self._driver.find_element(By.XPATH, "//input[@type='text' and @autocomplete='new-email' and @class='StyledInput_s1mzwy3']")
         element.clear()
         element.send_keys(email)
+        return element.text
 
     def enter_password(self, password):
         element = self._driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")

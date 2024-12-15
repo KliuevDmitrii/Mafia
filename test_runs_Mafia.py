@@ -10,6 +10,7 @@ from pages.MainPage import MainPage
 from pages.SignupPage import SignupPage
 from pages.LoginPage import LoginPage
 from pages.ResetPasswordPage import ResetPasswordPage
+from pages.ProfilePage import ProfilePage
 
 @pytest.fixture
 def browser():
@@ -180,3 +181,18 @@ def test_negative_reset_password_invalid_email(browser, email):
     reset_page.enter_email(email)
 
     assert reset_page.button_reset_password_disabled(), "Кнопка сброса пароля активна после ввода невалидного email"
+
+@pytest.mark.parametrize("email, password", [
+    ("qa@tester.com", "Qwerty1234!")
+])
+def test_open_profile_user(browser, email, password):
+    login_page = LoginPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    login_page.get()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+    main_page.click_name_user()
+
+    assert email == profile_page.check_user_email(), "Email в профиле не совпадает с введенным"
