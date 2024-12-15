@@ -196,3 +196,30 @@ def test_open_profile_user(browser, email, password):
     main_page.click_name_user()
 
     assert email == profile_page.check_user_email(), "Email в профиле не совпадает с введенным"
+    
+@pytest.mark.parametrize("email, password, confirm_password, user_name", [
+    ("qate234sts33@tes3ter.com", "Qwerty12345!", "Qwerty12345!", "new")
+])
+def test_remaining_passes_for_new_user(browser, email, password, confirm_password, user_name):
+    signup_page = SignupPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    signup_page.get()
+    signup_page.create_new_accaunt()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(confirm_password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_type_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+    main_page.click_name_user()
+    profile_page.click_tab_billing_information()
+    remaining_passes_text = profile_page.check_remaining_passes()
+    
+    assert remaining_passes_text is not None, "Не удалось получить текст оставшихся пропусков"
+    assert remaining_passes_text.isdigit(), f"Текст '{remaining_passes_text}' не является числом"
+    print(f"Оставшиеся пропуски: {remaining_passes_text}")

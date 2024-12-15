@@ -23,3 +23,25 @@ class ProfilePage:
             return email_text
         except TimeoutException:
             return None
+
+    def click_tab_billing_information(self):
+        billing_info_tab = WebDriverWait(self._driver, 10).until(
+            EC.presence_of_element_located((
+                By.XPATH,
+                '//div[@class="CustomNavbarItem_cvzvmhi" and text()="Billing information"]'
+                ))
+            )
+        billing_info_tab.click()
+
+    def check_remaining_passes(self):
+        try:
+            remaining_passes = WebDriverWait(self._driver, 10).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    '//div[@class="Container_cpo1j0r" and .//div[@class="NameCustom_n11c1htd" and text()="Remaining passes"]]//div[@class="ValueCustom_v182qmkw"]'
+            ))
+        )
+            return remaining_passes.text
+        except TimeoutException:
+            print("Элемент не найден")
+            return None
