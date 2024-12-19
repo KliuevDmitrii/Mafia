@@ -20,9 +20,10 @@ class MainPage:
         except:
             return False
     
-    def click_name_user(self):
-        name_user = WebDriverWait(self._driver, 10).until(
+    def click_avatar_user(self):
+        avatar_user = WebDriverWait(self._driver, 10).until(
                 EC.presence_of_element_located((
                     By.XPATH,
-                    '//div[@class="NameAndPayInfoContainer_n2ot533"]'))
-            ).click()
+                    '//img[@alt="avatar" and @src="https://res.cloudinary.com/liars-club/image/upload/c_scale,w_50/v1654378743/ludio_icon_login_fnh2ed.png"]'))
+            )
+        avatar_user.click()

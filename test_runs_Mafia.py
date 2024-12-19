@@ -15,17 +15,19 @@ from pages.ProfilePage import ProfilePage
 @pytest.fixture
 def browser():
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    driver.maximize_window()
     driver.implicitly_wait(5)
     yield driver
     driver.quit()
 
+# Проверка открытия страницы
 def test_open_page(browser):
     main_page = MainPage(browser)
     main_page.get()
 
     assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
     
-
+# Проверка авторизация зарегестрированного пользователя
 @pytest.mark.parametrize("email, password", [
     ("qa@tester.com", "Qwerty1234!")
 ])
@@ -38,6 +40,7 @@ def test_login_user(browser, email, password):
 
     assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
 
+# Проверка выхода из профиля
 @pytest.mark.parametrize("email, password", [
     ("qa@tester.com", "Qwerty1234!")
 ])
@@ -51,7 +54,47 @@ def test_log_out_user(browser, email, password):
 
     assert login_page.click_new_call_button(), "Кнопка нового звонка присутствует на странице"
 
+# Проверка смены имени (ПАДАЕТ, надо думать)
+@pytest.mark.parametrize("email, password, new_name", [
+    ("qa@tester.com", "Qwerty1234!", "TEST")
+])
+def test_change_name(browser, email, password, new_name):
+    login_page = LoginPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    login_page.get()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+    main_page.click_avatar_user()
+    profile_page.click_button_edit()
+    sleep(4)
+    profile_page.input_name(new_name)
+    sleep(3)
+    profile_page.click_button_save()
 
+    assert new_name == profile_page.check_user_name(), "Новое имя в профиле не совпадает с введенным"
+
+# Проверка добавления местоимения
+@pytest.mark.parametrize("email, password, pronouns", [
+    ("qa@tester.com", "Qwerty1234!", "He")
+])
+def test_add_pronouns(browser, email, password, pronouns):
+    login_page = LoginPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    login_page.get()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+    main_page.click_avatar_user()
+    profile_page.click_button_edit()
+    profile_page.input_pronouns(pronouns)
+    profile_page.click_button_save()
+
+    assert pronouns == profile_page.check_user_pronouns(), "Новое местоимение не совпадает с введённым"
+
+# Проверка создания нового персонального аккаунта без аватира
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
     ("qate234sts33@tes34ter.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
@@ -72,6 +115,7 @@ def test_create_new_account_personal_without_avatar(browser, email, password, co
 
     assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
+# Проверка создания нового персонального аккаунта с аватаром
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
     ("qatests2617@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
 ])
@@ -94,6 +138,7 @@ def test_create_new_account_personal_with_avatar(browser, email, password, confi
 
     assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
     
+# Проверка создание аккаунта с типом организация без аватара    
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
     ("qates43@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
 ])
@@ -114,6 +159,7 @@ def test_create_new_account_organization_without_avatar(browser, email, password
 
     assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
+# Проверка отображения текста о не валидном email при авторизации
 @pytest.mark.parametrize("email, password", [
     ("qa@tester", "Qwerty1234!"),
     ("qatester.com", "Qwerty1234!"),
@@ -131,6 +177,7 @@ def test_invalid_email(browser, email):
     
     assert error_text == "Invalid Email Format", f"Ожидали текст ошибки 'Invalid Email Format', получили '{error_text}'"
 
+# Проверка авторизации с невалидным email
 @pytest.mark.parametrize("email, password", [
     ("qa@@tester.com", "Qwerty1234!"),
     ("qa@tester.com ", "")
@@ -143,6 +190,7 @@ def test_login_user_invalid_email(browser, email, password):
 
     assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
 
+# Проверка сброса пароля
 @pytest.mark.parametrize("email", [
     ("qa@tester.com")
 ])
@@ -155,6 +203,7 @@ def test_positive_reset_password(browser, email):
 
     assert reset_page.popup() == "We have sent you instructions to change your password by email.", "Инструкция не отправлена на указанный email"
 
+# Проверка popup с информацией о невалидым email при сбросе пароля
 @pytest.mark.parametrize("email", [
     ("qa@tester.co")
 ])
@@ -167,6 +216,7 @@ def test_negative_reset_password_not_user_email(browser, email):
 
     assert reset_page.popup_alert()
 
+# Проверка активности кнопки сброса пароля при вводе не валидного  email
 @pytest.mark.parametrize("email", [
     ("qa@testercom"),
     ("qa@@tester.com"),
@@ -182,6 +232,7 @@ def test_negative_reset_password_invalid_email(browser, email):
 
     assert reset_page.button_reset_password_disabled(), "Кнопка сброса пароля активна после ввода невалидного email"
 
+# Проверка совпадения введённого email с email на странице профиля юзера
 @pytest.mark.parametrize("email, password", [
     ("qa@tester.com", "Qwerty1234!")
 ])
@@ -196,7 +247,8 @@ def test_open_profile_user(browser, email, password):
     main_page.click_name_user()
 
     assert email == profile_page.check_user_email(), "Email в профиле не совпадает с введенным"
-    
+
+# Проверка на количество оставшихся пропусков для нового юзера
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
     ("qate234sts33@tes3ter.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
