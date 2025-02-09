@@ -1,9 +1,14 @@
+import allure
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 class LoginPage:
+    """
+    Этот класс предоставляет методы для выполнения действий на странице авторизации пользователя
+    """
+
     def __init__(self, driver):
         self._driver = driver
 

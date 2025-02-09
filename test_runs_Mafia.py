@@ -1,4 +1,5 @@
 from time import sleep
+import allure
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -56,7 +57,7 @@ def test_log_out_user(browser, email, password):
 
 # Проверка смены имени (ПАДАЕТ, надо думать)
 @pytest.mark.parametrize("email, password, new_name", [
-    ("qa@tester.com", "Qwerty1234!", "TEST")
+    ("qa@tester.com", "Qwerty1234!", "TEST1")
 ])
 def test_change_name(browser, email, password, new_name):
     login_page = LoginPage(browser)
@@ -68,9 +69,7 @@ def test_change_name(browser, email, password, new_name):
     login_page.click_button_log_in()
     main_page.click_avatar_user()
     profile_page.click_button_edit()
-    sleep(4)
     profile_page.input_name(new_name)
-    sleep(3)
     profile_page.click_button_save()
 
     assert new_name == profile_page.check_user_name(), "Новое имя в профиле не совпадает с введенным"
@@ -94,7 +93,7 @@ def test_add_pronouns(browser, email, password, pronouns):
 
     assert pronouns == profile_page.check_user_pronouns(), "Новое местоимение не совпадает с введённым"
 
-# Проверка создания нового персонального аккаунта без аватира
+# Проверка создания нового персонального аккаунта без аватара
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
     ("qate234sts33@tes34ter.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
@@ -275,3 +274,40 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
     assert remaining_passes_text is not None, "Не удалось получить текст оставшихся пропусков"
     assert remaining_passes_text.isdigit(), f"Текст '{remaining_passes_text}' не является числом"
     print(f"Оставшиеся пропуски: {remaining_passes_text}")
+
+# Проверка на добавление банковской карты для для нового пользователя
+@pytest.mark.parametrize("email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name", [
+    ("qate235@teyte.aqz", "Qwerty12345!", "Qwerty12345!", "new", "4242424242424242", "1234", "123", "Test User")
+])
+def test_add_credit_card(browser, email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name):
+    signup_page = SignupPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    signup_page.get()
+    signup_page.create_new_accaunt()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(confirm_password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_type_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+    main_page.click_avatar_user()
+    profile_page.click_tab_billing_information()
+    profile_page.click_button_update()
+    profile_page.subscription_plan_monthly()
+    profile_page.click_button_continue()
+    profile_page.add_card(card_number, card_date, card_cvc, cardholder_name)
+    profile_page.click_button_start_my_subscription()
+    profile_page.click_button_confirm()
+    expected_last_four_digits = card_number[-4:]
+    is_valid = profile_page.check_new_card_add(expected_last_four_digits)
+    
+    assert is_valid, f"Ожидаемые последние 4 цифры: {expected_last_four_digits}, но отображается другая информация"
+
+
+
+
