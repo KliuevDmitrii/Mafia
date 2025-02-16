@@ -14,6 +14,7 @@ pip install pytest selenium
 ```bash
 pytest
 selenium
+allure
 ```
 
 4. Установите зависимости из файла:

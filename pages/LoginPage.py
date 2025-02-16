@@ -15,24 +15,28 @@ class LoginPage:
     def get(self):
         self._driver.get("https://dev.ludio.gg/login")
 
-    def enter_email(self, email):
+    @allure.step("Ввести почту в поле email")
+    def enter_email(self, email: str):
         element = self._driver.find_element(By.XPATH, "//input[@type='text' and @autocomplete='new-email' and @class='StyledInput_s1mzwy3']")
         element.clear()
         element.send_keys(email)
         return element.text
-
-    def enter_password(self, password):
+    
+    @allure.step("Ввести пароль в поле password")
+    def enter_password(self, password: str):
         element = self._driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")
         element.clear()
         element.send_keys(password)
 
+    @allure.step("Нажать кнопку Login")
     def click_button_log_in(self):
         WebDriverWait(self._driver, 10).until(
         EC.element_to_be_clickable((
             By.XPATH, 
             "//button[contains(@class, 'StyledButton_s17mzjxz') and @color='#fff' and text()='Log in']"))
     ).click()
-        
+
+    @allure.step("Кнопка Login не активна")    
     def find_disabled_login_button(self):
         try:
             button = WebDriverWait(self._driver, 10).until(
@@ -43,7 +47,8 @@ class LoginPage:
             return button.get_attribute("disabled") is not None
         except TimeoutException:
             return False
-
+    
+    @allure.step("Нажать кнопку New call")
     def click_new_call_button(self):
         try:
             button = WebDriverWait(self._driver, 10).until(
@@ -55,11 +60,13 @@ class LoginPage:
         except TimeoutException:
             print("Активная кнопка не найдена")
             return False
-        
-    def invalid_email_format(self):
+
+    @allure.step("Формат почты не валидный")    
+    def invalid_email_format(self) -> str:
         error = self._driver.find_element(By.XPATH, '//label[@class="ErrorLabel_e1h592ms" and contains(text(), "Invalid Email Format")]')
         return error.text
     
+    @allure.step("Нажать кнопку Log out")
     def click_button_log_out(self):
         button = WebDriverWait(self._driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, 

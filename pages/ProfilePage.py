@@ -19,8 +19,7 @@ class ProfilePage:
     def get(self):
         self._driver.get("https://dev.ludio.gg/profile")
 
-# Account settings
-
+    @allure.step("Нажать кнопку Edit")
     def click_button_edit(self):
         edit_button = WebDriverWait(self._driver, 20).until(
             EC.presence_of_element_located((
@@ -30,7 +29,8 @@ class ProfilePage:
         )
         edit_button.click()
 
-    def input_name(self, new_name):
+    @allure.step("Ввести в поле Name новое имя")
+    def input_name(self, new_name: str) -> str:
         input_field = WebDriverWait(self._driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
@@ -44,6 +44,7 @@ class ProfilePage:
         time.sleep(5)
         return input_field.get_attribute("value")
     
+    @allure.step("Нажать кнопку Save")
     def click_button_save(self):
         time.sleep(5)
         save_button = WebDriverWait(self._driver, 20).until(
@@ -55,7 +56,8 @@ class ProfilePage:
         save_button.click()
         time.sleep(5)
 
-    def input_pronouns(self, pronouns):
+    @allure.step("Ввести в поле pronouns новое значение")
+    def input_pronouns(self, pronouns: str) -> str:
         input_field = WebDriverWait(self._driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
@@ -66,6 +68,7 @@ class ProfilePage:
         input_field.send_keys(pronouns)
         return input_field.get_attribute("value")
     
+    @allure.step("Проверка нового значения в Pronouns")
     def check_user_pronouns(self):
         try:
             time.sleep(5)
@@ -80,6 +83,7 @@ class ProfilePage:
         except TimeoutException:
             return None
 
+    @allure.step("Проверить имя пользователя")
     def check_user_name(self):
         try:
             time.sleep(5)
@@ -94,6 +98,7 @@ class ProfilePage:
         except TimeoutException:
             return None
 
+    @allure.step("Проверить почту пользователя")
     def check_user_email(self):
         try:
             email_element = WebDriverWait(self._driver, 10).until(
@@ -108,7 +113,8 @@ class ProfilePage:
             return None
         
     # Billing information
-
+    
+    @allure.step("Нажать на вкладку Billing information")
     def click_tab_billing_information(self):
         billing_info_tab = WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -118,6 +124,7 @@ class ProfilePage:
         )
         billing_info_tab.click()
 
+    @allure.step("Нажать кнопку Update")
     def click_button_update(self):
         time.sleep(3)
         update_button = WebDriverWait(self._driver, 20).until(
@@ -128,6 +135,7 @@ class ProfilePage:
         )
         update_button.click()
 
+    @allure.step("Выбоать план подптски на месяц")
     def subscription_plan_monthly(self):
         time.sleep(2)
         monthly = WebDriverWait(self._driver, 20).until(
@@ -138,6 +146,7 @@ class ProfilePage:
         )
         monthly.click()
 
+    @allure.step("Выбрать план подписки на год")
     def subscription_plan_annual(self):
         time.sleep(2)
         annual = WebDriverWait(self._driver, 10).until(
@@ -147,7 +156,8 @@ class ProfilePage:
             ))
         )
         annual.click()
-
+    
+    @allure.step("Нажать кнопку Continue")
     def click_button_continue(self):
         continue_button = WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -157,7 +167,8 @@ class ProfilePage:
         )
         continue_button.click()
 
-    def add_card(self, card_number, card_date, card_cvc, cardholder_name):
+    @allure.step("Ввести: номер карты, срок действия карты, CVC карты, имя держателя карты")
+    def add_card(self, card_number: int, card_date: int, card_cvc: int, cardholder_name: str):
         time.sleep(4)
         WebDriverWait(self._driver, 10).until(
             EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'js.stripe.com')]"
@@ -206,6 +217,7 @@ class ProfilePage:
         cardholder_field.clear()
         cardholder_field.send_keys(cardholder_name)
 
+    @allure.step("Нажать кнопку Start my subscription")
     def click_button_start_my_subscription(self):
         start_my_subscription_button = WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -215,6 +227,7 @@ class ProfilePage:
         )
         start_my_subscription_button.click()
 
+    @allure.step("Нажать кнопку Confirm")
     def click_button_confirm(self):
         confirm_button = WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -224,6 +237,7 @@ class ProfilePage:
         )
         confirm_button.click()
 
+    @allure.step("Нажать кнопку Cancel")
     def click_button_cancel(self):
         cancel_button = WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -233,6 +247,7 @@ class ProfilePage:
         )
         cancel_button.click()
         
+    @allure.step("Закрыть окно добавления метода оплаты")
     def close_popup_payment_settings(self):
         WebDriverWait(self._driver, 10).until(
             EC.presence_of_element_located((
@@ -241,6 +256,7 @@ class ProfilePage:
             ))
         ).click()
 
+    @allure.step("Проверка добавления новой карты")
     def check_new_card_add(self):
         card_number = WebDriverWait(self._driver, 10).until(
                 EC.presence_of_element_located((
@@ -251,7 +267,7 @@ class ProfilePage:
         displayed_card_number = card_number.text
 
 
-
+    @allure.step("Проверка оставшихся Remaining passes")
     def check_remaining_passes(self):
         try:
             remaining_passes = WebDriverWait(self._driver, 10).until(

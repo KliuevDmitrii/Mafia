@@ -14,6 +14,7 @@ class MainPage:
     def get(self):
         self._driver.get("https://dev.ludio.gg/")
 
+    @allure.step("Страница пользователя открыта")
     def is_page_loaded(self):
         try:
             WebDriverWait(self._driver, 10).until(
@@ -25,6 +26,7 @@ class MainPage:
         except:
             return False
     
+    @allure.step("Нажать на аватар пользователя")
     def click_avatar_user(self):
         avatar_user = WebDriverWait(self._driver, 10).until(
                 EC.presence_of_element_located((
