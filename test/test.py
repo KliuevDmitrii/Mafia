@@ -13,13 +13,6 @@ from pages.LoginPage import LoginPage
 from pages.ResetPasswordPage import ResetPasswordPage
 from pages.ProfilePage import ProfilePage
 
-@pytest.fixture
-def browser():
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
-    driver.maximize_window()
-    driver.implicitly_wait(5)
-    yield driver
-    driver.quit()
 
 # Проверка открытия страницы
 def test_open_page(browser):
@@ -34,12 +27,13 @@ def test_open_page(browser):
 ])
 def test_login_user(browser, email, password):
     login_page = LoginPage(browser)
+    main_page = MainPage(browser)
     login_page.get()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
 
-    assert login_page.click_new_call_button(), "Кнопка New Call отсутствует на странице"
+    assert main_page.is_div_element_name_user, "Имя пользователя отсутствует на странице"
 
 # Проверка выхода из профиля
 @pytest.mark.parametrize("email, password", [
@@ -249,7 +243,7 @@ def test_open_profile_user(browser, email, password):
 
 # Проверка на количество оставшихся пропусков для нового юзера
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qate234sts33@tes3ter.com", "Qwerty12345!", "Qwerty12345!", "new")
+    ("qate234sts3@ozester.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
 def test_remaining_passes_for_new_user(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
@@ -267,7 +261,7 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
     signup_page.on_checkbox_community_guidelines()
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
-    main_page.click_name_user()
+    main_page.click_avatar_user()
     profile_page.click_tab_billing_information()
     remaining_passes_text = profile_page.check_remaining_passes()
     
@@ -277,7 +271,7 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
 
 # Проверка на добавление банковской карты для для нового пользователя
 @pytest.mark.parametrize("email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name", [
-    ("qate235@teyte.aqz", "Qwerty12345!", "Qwerty12345!", "new", "4242424242424242", "1234", "123", "Test User")
+    ("qate235@teyte.kn", "Qwerty12345!", "Qwerty12345!", "new", 4242424242424242, 1234, 123, "Test User")
 ])
 def test_add_credit_card(browser, email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name):
     signup_page = SignupPage(browser)

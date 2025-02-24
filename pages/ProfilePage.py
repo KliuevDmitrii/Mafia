@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 
 
@@ -13,15 +14,16 @@ class ProfilePage:
     Этот класс предоставляет методы для выполнения действий на странице профиля пользователя
     """
      
-    def __init__(self, driver):
-        self._driver = driver
+    def __init__(self, driver: WebDriver) -> None:
+        self.__url = "https://dev.ludio.gg/profile"
+        self.__driver = driver
 
     def get(self):
-        self._driver.get("https://dev.ludio.gg/profile")
+        self.__driver.get(self.__url)
 
     @allure.step("Нажать кнопку Edit")
     def click_button_edit(self):
-        edit_button = WebDriverWait(self._driver, 20).until(
+        edit_button = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//button[@color="#55AA64" and @class="StyledButton_s17mzjxz" and text()="Edit"]'
@@ -31,7 +33,7 @@ class ProfilePage:
 
     @allure.step("Ввести в поле Name новое имя")
     def input_name(self, new_name: str) -> str:
-        input_field = WebDriverWait(self._driver, 20).until(
+        input_field = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 f'//*[@id="root"]/div/div/div[2]/div/div[2]/div/div[1]/div[3]/div[1]/div/div/input'
@@ -47,7 +49,7 @@ class ProfilePage:
     @allure.step("Нажать кнопку Save")
     def click_button_save(self):
         time.sleep(5)
-        save_button = WebDriverWait(self._driver, 20).until(
+        save_button = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//button[@class="StyledButton_s17mzjxz" and text()="Save"]'
@@ -58,7 +60,7 @@ class ProfilePage:
 
     @allure.step("Ввести в поле pronouns новое значение")
     def input_pronouns(self, pronouns: str) -> str:
-        input_field = WebDriverWait(self._driver, 20).until(
+        input_field = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 f'//*[@id="root"]/div/div/div[2]/div/div[2]/div/div[1]/div[3]/div[2]/div/div/input'
@@ -72,7 +74,7 @@ class ProfilePage:
     def check_user_pronouns(self):
         try:
             time.sleep(5)
-            pronouns_element = WebDriverWait(self._driver, 40).until(
+            pronouns_element = WebDriverWait(self.__driver, 40).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 f'//*[@id="root"]/div[2]/div/div[2]/div/div[2]/div/div[1]/div[3]/div[2]/div'
@@ -87,7 +89,7 @@ class ProfilePage:
     def check_user_name(self):
         try:
             time.sleep(5)
-            name_element = WebDriverWait(self._driver, 10).until(
+            name_element = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 '//div[@class="UsernameEmailCustom_u14t02mx"]/h6'
@@ -101,7 +103,7 @@ class ProfilePage:
     @allure.step("Проверить почту пользователя")
     def check_user_email(self):
         try:
-            email_element = WebDriverWait(self._driver, 10).until(
+            email_element = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 '//div[@class="UsernameEmailCustom_u14t02mx"]/p'
@@ -116,7 +118,7 @@ class ProfilePage:
     
     @allure.step("Нажать на вкладку Billing information")
     def click_tab_billing_information(self):
-        billing_info_tab = WebDriverWait(self._driver, 10).until(
+        billing_info_tab = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
                 '//div[@class="CustomNavbarItem_cvzvmhi" and text()="Billing information"]'
@@ -127,7 +129,7 @@ class ProfilePage:
     @allure.step("Нажать кнопку Update")
     def click_button_update(self):
         time.sleep(3)
-        update_button = WebDriverWait(self._driver, 20).until(
+        update_button = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//button[@class='StyledButton_s17mzjxz' and text()='Update']"
@@ -138,7 +140,7 @@ class ProfilePage:
     @allure.step("Выбоать план подптски на месяц")
     def subscription_plan_monthly(self):
         time.sleep(2)
-        monthly = WebDriverWait(self._driver, 20).until(
+        monthly = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//div[contains(@class, "PlanCardDefault_plevllw") and .//h3[text()="Monthly"]]'
@@ -149,7 +151,7 @@ class ProfilePage:
     @allure.step("Выбрать план подписки на год")
     def subscription_plan_annual(self):
         time.sleep(2)
-        annual = WebDriverWait(self._driver, 10).until(
+        annual = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//div[contains(@class, "PlanCardDefault_plevllw") and .//h3[text()="Annual"]]'
@@ -159,7 +161,7 @@ class ProfilePage:
     
     @allure.step("Нажать кнопку Continue")
     def click_button_continue(self):
-        continue_button = WebDriverWait(self._driver, 10).until(
+        continue_button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//button[@class='ContinueButton_cpp8ujb StyledButton_s17mzjxz' and text()='Continue']"
@@ -170,56 +172,52 @@ class ProfilePage:
     @allure.step("Ввести: номер карты, срок действия карты, CVC карты, имя держателя карты")
     def add_card(self, card_number: int, card_date: int, card_cvc: int, cardholder_name: str):
         time.sleep(4)
-        WebDriverWait(self._driver, 10).until(
-            EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'js.stripe.com')]"
-            ))
+        iframe = WebDriverWait(self.__driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='elements-inner-card']"))
         )
+        self.__driver.switch_to.frame(iframe)
 
-        number_input =  WebDriverWait(self._driver, 10).until(
+        number_input =  WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                '//input[@name="cardnumber" and @autocomplete="cc-number" and @type="text" and @inputmode="numeric" and @placeholder="Номер карты"]'
+                '//input[@name="cardnumber" and @autocomplete="cc-number" and @type="text" and @inputmode="numeric"]'
             ))
         )
         number_input.clear()
         number_input.send_keys(card_number)
 
-        time.sleep(4)
-
-        date_field = WebDriverWait(self._driver, 10).until(
+        date_field = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                '//input[@placeholder="MM / YY"]'
+                '//input[@placeholder="ММ / ГГ"]'
             ))
         )
         date_field.clear()
         date_field.send_keys(card_date)
 
-        time.sleep(4)
-
-        cvc_field = WebDriverWait(self._driver, 10).until(
+        cvc_field = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                "//input[@aria-label='Credit or debit card CVC/CVV']"
+                "//input[@name='cvc']"
             ))
         )
         cvc_field.clear()
         cvc_field.send_keys(card_cvc)
 
-        time.sleep(4)
-
-        cardholder_field = WebDriverWait(self._driver, 10).until(
+        cardholder_field = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                "//div[@class='CardholderWrapper_c1nsgap9']/input[@aria-label='Name of the credit or debit card holder']"
+                "//input[@placeholder='Cardholder name']"
             ))
         )
         cardholder_field.clear()
         cardholder_field.send_keys(cardholder_name)
 
+        self.__driver.switch_to.default_content()
+
     @allure.step("Нажать кнопку Start my subscription")
     def click_button_start_my_subscription(self):
-        start_my_subscription_button = WebDriverWait(self._driver, 10).until(
+        start_my_subscription_button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//button[text()='Start my subscription!']"
@@ -229,7 +227,7 @@ class ProfilePage:
 
     @allure.step("Нажать кнопку Confirm")
     def click_button_confirm(self):
-        confirm_button = WebDriverWait(self._driver, 10).until(
+        confirm_button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//button[text()='Confirm']"
@@ -239,7 +237,7 @@ class ProfilePage:
 
     @allure.step("Нажать кнопку Cancel")
     def click_button_cancel(self):
-        cancel_button = WebDriverWait(self._driver, 10).until(
+        cancel_button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//button[text()='Cancel']"
@@ -249,7 +247,7 @@ class ProfilePage:
         
     @allure.step("Закрыть окно добавления метода оплаты")
     def close_popup_payment_settings(self):
-        WebDriverWait(self._driver, 10).until(
+        WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 "//div[contains(@style, 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3Zn')]"
@@ -258,7 +256,7 @@ class ProfilePage:
 
     @allure.step("Проверка добавления новой карты")
     def check_new_card_add(self):
-        card_number = WebDriverWait(self._driver, 10).until(
+        card_number = WebDriverWait(self.__driver, 10).until(
                 EC.presence_of_element_located((
                     By.XPATH,
                     "//div[contains(@class, 'CardName_c1un9bd') and contains(text(), '...')]"
@@ -270,7 +268,7 @@ class ProfilePage:
     @allure.step("Проверка оставшихся Remaining passes")
     def check_remaining_passes(self):
         try:
-            remaining_passes = WebDriverWait(self._driver, 10).until(
+            remaining_passes = WebDriverWait(self.__driver, 10).until(
                 EC.presence_of_element_located((
                     By.XPATH,
                     '//div[@class="Container_cpo1j0r" and .//div[@class="NameCustom_n11c1htd" and text()="Remaining passes"]]//div[@class="ValueCustom_v182qmkw"]'

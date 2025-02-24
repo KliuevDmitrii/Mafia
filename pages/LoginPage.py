@@ -3,34 +3,37 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.keys import Keys
 
 class LoginPage:
     """
     Этот класс предоставляет методы для выполнения действий на странице авторизации пользователя
     """
 
-    def __init__(self, driver):
-        self._driver = driver
+    def __init__(self, driver: WebDriver) -> None:
+        self.__url = "https://dev.ludio.gg/login"
+        self.__driver = driver
 
     def get(self):
-        self._driver.get("https://dev.ludio.gg/login")
+        self.__driver.get(self.__url)
 
     @allure.step("Ввести почту в поле email")
     def enter_email(self, email: str):
-        element = self._driver.find_element(By.XPATH, "//input[@type='text' and @autocomplete='new-email' and @class='StyledInput_s1mzwy3']")
+        element = self.__driver.find_element(By.XPATH, "//input[@type='text' and @autocomplete='new-email' and @class='StyledInput_s1mzwy3']")
         element.clear()
         element.send_keys(email)
         return element.text
     
     @allure.step("Ввести пароль в поле password")
     def enter_password(self, password: str):
-        element = self._driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")
+        element = self.__driver.find_element(By.XPATH, "//input[@type='password' and @autocomplete='new-password' and contains(@class, 'StyledInput_s1mzwy3')]")
         element.clear()
         element.send_keys(password)
 
     @allure.step("Нажать кнопку Login")
     def click_button_log_in(self):
-        WebDriverWait(self._driver, 10).until(
+        WebDriverWait(self.__driver, 10).until(
         EC.element_to_be_clickable((
             By.XPATH, 
             "//button[contains(@class, 'StyledButton_s17mzjxz') and @color='#fff' and text()='Log in']"))
@@ -39,7 +42,7 @@ class LoginPage:
     @allure.step("Кнопка Login не активна")    
     def find_disabled_login_button(self):
         try:
-            button = WebDriverWait(self._driver, 10).until(
+            button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//button[@class="StyledButton_s17mzjxz" and @disabled and text()="Log in"]'))
@@ -51,7 +54,7 @@ class LoginPage:
     @allure.step("Нажать кнопку New call")
     def click_new_call_button(self):
         try:
-            button = WebDriverWait(self._driver, 15).until(
+            button = WebDriverWait(self.__driver, 15).until(
                 EC.element_to_be_clickable((By.XPATH, 
                 "//button[@color='#fff' and contains(@class, 'StyledButton_s17mzjxz') and not(@disabled)]"))
         )
@@ -63,12 +66,12 @@ class LoginPage:
 
     @allure.step("Формат почты не валидный")    
     def invalid_email_format(self) -> str:
-        error = self._driver.find_element(By.XPATH, '//label[@class="ErrorLabel_e1h592ms" and contains(text(), "Invalid Email Format")]')
+        error = self.__driver.find_element(By.XPATH, '//label[@class="ErrorLabel_e1h592ms" and contains(text(), "Invalid Email Format")]')
         return error.text
     
     @allure.step("Нажать кнопку Log out")
     def click_button_log_out(self):
-        button = WebDriverWait(self._driver, 10).until(
+        button = WebDriverWait(self.__driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, 
                 "//button[@class='StyledButton_s17mzjxz' and @color='#ccc']"))
         )
