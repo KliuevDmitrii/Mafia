@@ -159,7 +159,7 @@ def test_create_new_account_organization_without_avatar(browser, email, password
     assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
 # Проверка отображения текста о не валидном email при авторизации
-@pytest.mark.parametrize("email, password", [
+@pytest.mark.parametrize("email", [
     ("qa@tester", "Qwerty1234!"),
     ("qatester.com", "Qwerty1234!"),
     ("qa@@tester.com", "Qwerty1234!"),

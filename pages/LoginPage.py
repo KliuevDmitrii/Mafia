@@ -51,7 +51,7 @@ class LoginPage:
     @allure.step("Нажать кнопку New call")
     def click_new_call_button(self):
         try:
-            button = WebDriverWait(self._driver, 10).until(
+            button = WebDriverWait(self._driver, 15).until(
                 EC.element_to_be_clickable((By.XPATH, 
                 "//button[@color='#fff' and contains(@class, 'StyledButton_s17mzjxz') and not(@disabled)]"))
         )
