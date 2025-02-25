@@ -301,6 +301,7 @@ def test_add_credit_card(browser, email, password, confirm_password, user_name, 
     is_valid = profile_page.check_new_card_add(expected_last_four_digits)
     
     assert is_valid, f"Ожидаемые последние 4 цифры: {expected_last_four_digits}, но отображается другая информация"
+    # 
 
 
 
