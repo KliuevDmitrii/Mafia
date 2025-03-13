@@ -2,7 +2,7 @@
 
 ### Шаги
 1. Склонировать проект 'git clone https://github.com/KliuevDmitrii/Mafia.git'
-2. Установить зависимости
+2. Установить зависимости 'pip3 install > -r requirements.txt'
 3. Запустить тесты 'pytest'
 4. Сгенерировать отчет 'allure generate allure-files -o allure-report'
 5. Открыть отчет 'allure open allure-report'
@@ -10,12 +10,20 @@
 ### Стек:
 - pytest
 - selenium
+- webdriver manager 
+- requests
 - allure
-- config
+- configparser
+- json
 
 ### Струткура:
 - ./test - тесты
-- ./pages - описание страниц
+- ./page - описание страниц
+- ./api - хелперы для работы с API
+- ./configuration - провайдер настроек
+    - test_config.ini - настройки для тестов
+- ./testdata - провайдер тестовых данных
+    - test_data.json
 
 ### Полезные ссылки
 - [Подсказка по markdown](https://www.markdownguide.org/basic-syntax/)

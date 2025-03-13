@@ -6,6 +6,8 @@ pytest.ini
 allure*
 allure-report/
 allure-files/
+test_config.ini
+test_data.json
 
 .pytest_cache
 __pycache__
@@ -459,6 +461,7 @@ pyrightconfig.json
 
 ### VisualStudioCode ###
 .vscode/*
+.vscode
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
