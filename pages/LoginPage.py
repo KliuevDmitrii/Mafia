@@ -6,16 +6,20 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 
+from configuration.ConfigProvider import ConfigProvider
+
 class LoginPage:
     """
     Этот класс предоставляет методы для выполнения действий на странице авторизации пользователя
     """
 
     def __init__(self, driver: WebDriver) -> None:
-        self.__url = "https://dev.ludio.gg/login"
+        url = ConfigProvider().get("ui", "base_url")
+        self.__url = url+"login"
         self.__driver = driver
 
-    def get(self):
+    @allure.step("Перейти на главную страницу")
+    def go(self):
         self.__driver.get(self.__url)
 
     @allure.step("Ввести почту в поле email")

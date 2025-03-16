@@ -1,6 +1,7 @@
 from time import sleep
 import allure
 import pytest
+from faker import Faker
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
@@ -13,27 +14,32 @@ from pages.LoginPage import LoginPage
 from pages.ResetPasswordPage import ResetPasswordPage
 from pages.ProfilePage import ProfilePage
 
+fake = Faker()
+
 
 # Проверка открытия страницы
 def test_open_page(browser):
     main_page = MainPage(browser)
-    main_page.get()
+    main_page.go()
 
     assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
-    
+
 # Проверка авторизация зарегестрированного пользователя
-@pytest.mark.parametrize("email, password", [
-    ("qa@tester.com", "Qwerty1234!")
-])
-def test_login_user(browser, email, password):
+def auth_test(browser, test_data: dict):
+    username = test_data.get("username")
+    email = test_data.get("email")
+    password = test_data.get("pass")
+
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
 
-    assert main_page.is_div_element_name_user, "Имя пользователя отсутствует на странице"
+    with allure.step("Проверить, что пользователь авторизовался"):
+        assert main_page.is_div_element_name_user, "Имя пользователя отсутствует на странице"
+    
 
 # Проверка выхода из профиля
 @pytest.mark.parametrize("email, password", [
@@ -41,7 +47,7 @@ def test_login_user(browser, email, password):
 ])
 def test_log_out_user(browser, email, password):
     login_page = LoginPage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
@@ -57,7 +63,7 @@ def test_change_name(browser, email, password, new_name):
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
@@ -76,7 +82,7 @@ def test_add_pronouns(browser, email, password, pronouns):
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
@@ -93,7 +99,7 @@ def test_add_pronouns(browser, email, password, pronouns):
 ])
 def test_create_new_account_personal_without_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
-    signup_page.get()
+    signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
@@ -114,7 +120,7 @@ def test_create_new_account_personal_without_avatar(browser, email, password, co
 ])
 def test_create_new_account_personal_with_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
-    signup_page.get()
+    signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
@@ -137,7 +143,7 @@ def test_create_new_account_personal_with_avatar(browser, email, password, confi
 ])
 def test_create_new_account_organization_without_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
-    signup_page.get()
+    signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
@@ -160,11 +166,12 @@ def test_create_new_account_organization_without_avatar(browser, email, password
     ("qа@tester.com", "Qwerty1234!"),
     ("q", "Qwerty1234!"),
     ("qa@tester.com ", "Qwerty1234!"),
-    ("", "Qwerty1234!")
+    ("", "Qwerty1234!"),
+    (" qa@tester.com", "Qwerty1234!")
 ])
 def test_invalid_email(browser, email):
     login_page = LoginPage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     error_text = login_page.invalid_email_format()
     
@@ -177,7 +184,7 @@ def test_invalid_email(browser, email):
 ])
 def test_login_user_invalid_email(browser, email, password):
     login_page = LoginPage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
 
@@ -189,7 +196,7 @@ def test_login_user_invalid_email(browser, email, password):
 ])
 def test_positive_reset_password(browser, email):
     reset_page = ResetPasswordPage(browser)
-    reset_page.get()
+    reset_page.go()
     reset_page.forgot_password()
     reset_page.enter_email(email)
     reset_page.click_button_reset_password()
@@ -202,7 +209,7 @@ def test_positive_reset_password(browser, email):
 ])
 def test_negative_reset_password_not_user_email(browser, email):
     reset_page = ResetPasswordPage(browser)
-    reset_page.get()
+    reset_page.go()
     reset_page.forgot_password()
     reset_page.enter_email(email)
     reset_page.click_button_reset_password()
@@ -219,7 +226,7 @@ def test_negative_reset_password_not_user_email(browser, email):
 ])
 def test_negative_reset_password_invalid_email(browser, email):
     reset_page = ResetPasswordPage(browser)
-    reset_page.get()
+    reset_page.go()
     reset_page.forgot_password()
     reset_page.enter_email(email)
 
@@ -233,7 +240,7 @@ def test_open_profile_user(browser, email, password):
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
-    login_page.get()
+    login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
@@ -249,7 +256,7 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
     signup_page = SignupPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
-    signup_page.get()
+    signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
@@ -277,7 +284,7 @@ def test_add_credit_card(browser, email, password, confirm_password, user_name, 
     signup_page = SignupPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
-    signup_page.get()
+    signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)

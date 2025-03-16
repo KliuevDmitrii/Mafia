@@ -6,14 +6,18 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 
+from configuration.ConfigProvider import ConfigProvider
+
 class ResetPasswordPage:
 
     def __init__(self, driver: WebDriver) -> None:
-        self.__url = "https://dev.ludio.gg/login"
+        url = ConfigProvider().get("ui", "base_url")
+        self.__url = url+"login"
         self.__driver = driver
 
 
-    def get(self):
+    @allure.step("Перейти на страницу авторизации")
+    def go(self):
         self.__driver.get(self.__url)
 
     def forgot_password(self):

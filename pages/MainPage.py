@@ -7,17 +7,25 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 
+from configuration.ConfigProvider import ConfigProvider
+
 class MainPage:
     """
     Этот класс предоставляет методы для выполнения действий на странице пользователя
     """
      
     def __init__(self, driver: WebDriver) -> None:
-        self.__url = "https://dev.ludio.gg/"
+        url = ConfigProvider().get("ui", "base_url")
+        self.__url = url
         self.__driver = driver
 
-    def get(self):
+    @allure.step("Перейти на главную страницу")
+    def go(self):
         self.__driver.get(self.__url)
+
+    @allure.step("Получить текущий URL")
+    def get_current_url(self) -> str:
+        return self.__driver.current_url
 
     @allure.step("Страница пользователя открыта")
     def is_page_loaded(self):
