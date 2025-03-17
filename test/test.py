@@ -42,10 +42,10 @@ def auth_test(browser, test_data: dict):
     
 
 # Проверка выхода из профиля
-@pytest.mark.parametrize("email, password", [
-    ("qa@tester.com", "Qwerty1234!")
-])
-def test_log_out_user(browser, email, password):
+def test_log_out_user(browser, test_data: dict):
+    username = test_data.get("username")
+    email = test_data.get("email")
+    password = test_data.get("pass")
     login_page = LoginPage(browser)
     login_page.go()
     login_page.enter_email(email)
@@ -53,7 +53,8 @@ def test_log_out_user(browser, email, password):
     login_page.click_button_log_in()
     login_page.click_button_log_out()
 
-    assert login_page.click_new_call_button(), "Кнопка нового звонка присутствует на странице"
+    with allure.step("Проверить, что пользователь выполнил разлогин"):
+        assert login_page.click_new_call_button(), "Кнопка нового звонка присутствует на странице"
 
 # Проверка смены имени (ПАДАЕТ, надо думать)
 @pytest.mark.parametrize("email, password, new_name", [
@@ -94,16 +95,18 @@ def test_add_pronouns(browser, email, password, pronouns):
     assert pronouns == profile_page.check_user_pronouns(), "Новое местоимение не совпадает с введённым"
 
 # Проверка создания нового персонального аккаунта без аватара
-@pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qate234sts33@tes34ter.com", "Qwerty12345!", "Qwerty12345!", "new")
-])
-def test_create_new_account_personal_without_avatar(browser, email, password, confirm_password, user_name):
+def test_create_new_account_personal_without_avatar(browser):
+    email = fake.email()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    user_name = fake.name()    
+
     signup_page = SignupPage(browser)
+
     signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
-    signup_page.confirm_password(confirm_password)
+    signup_page.confirm_password(password)
     signup_page.click_button_create_account()
     signup_page.choose_username(user_name)
     signup_page.account_type_personal()
@@ -112,30 +115,34 @@ def test_create_new_account_personal_without_avatar(browser, email, password, co
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
 
-    assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
+    with allure.step("Проверить, что имя нового пользователя отображается на главной странице"):
+        assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
 # Проверка создания нового персонального аккаунта с аватаром
-@pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qatests2617@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
-])
-def test_create_new_account_personal_with_avatar(browser, email, password, confirm_password, user_name):
+def test_create_new_account_personal_with_avatar(browser):
+    email = fake.email()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    user_name = fake.name()
+    avatar_path = '/home/dmitriik/Документы/Mafia/avatar.png'
+
     signup_page = SignupPage(browser)
+
     signup_page.go()
     signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
-    signup_page.confirm_password(confirm_password)
+    signup_page.confirm_password(password)
     signup_page.click_button_create_account()
     signup_page.choose_username(user_name)
     signup_page.account_type_personal()
     signup_page.on_checkbox_privacy_policy()
     signup_page.on_checkbox_community_guidelines()
     signup_page.click_button_continue()
-    avatar_path = '/home/dmitriik/Документы/Mafia/avatar.png'
     signup_page.add_avatar_photo(avatar_path)
     signup_page.click_button_continue_step_2()
 
-    assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
+    with allure.step("Проверить, что имя нового пользователя отображается на главной странице"):
+        assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
     
 # Проверка создание аккаунта с типом организация без аватара    
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [

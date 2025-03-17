@@ -1,5 +1,9 @@
 import allure
 import time
+
+from faker import Faker
+import requests
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -8,6 +12,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 
 from configuration.ConfigProvider import ConfigProvider
+
+fake = Faker()
 
 class SignupPage:
     
@@ -57,7 +63,7 @@ class SignupPage:
         element.send_keys(password)
 
     def click_button_create_account(self):
-        WebDriverWait(self.__driver, 10).until(
+        WebDriverWait(self.__driver, 20).until(
         EC.element_to_be_clickable((
             By.XPATH, 
             "//button[contains(@class, 'StyledButton_s17mzjxz') and @color='#fff' and text()='Create account' and not(@disabled)]"
@@ -153,4 +159,3 @@ class SignupPage:
             '//input[@type="file"]'))
     )
         file_input.send_keys(file_path)
-
