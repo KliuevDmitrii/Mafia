@@ -22,6 +22,12 @@ class LoginPage:
     def go(self):
         self.__driver.get(self.__url)
 
+    @allure.step("Перейти на страницу создания нового аккаунта")
+    def create_new_accaunt(self):
+        self.__driver.find_element(
+            By.XPATH,
+              "//a[@href='/sign_up']").click()
+
     @allure.step("Ввести почту в поле email")
     def enter_email(self, email: str):
         element = self.__driver.find_element(By.XPATH, "//input[@type='text' and @autocomplete='new-email' and @class='StyledInput_s1mzwy3']")

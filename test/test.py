@@ -103,7 +103,6 @@ def test_create_new_account_personal_without_avatar(browser):
     signup_page = SignupPage(browser)
 
     signup_page.go()
-    signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
     signup_page.confirm_password(password)
@@ -128,7 +127,6 @@ def test_create_new_account_personal_with_avatar(browser):
     signup_page = SignupPage(browser)
 
     signup_page.go()
-    signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
     signup_page.confirm_password(password)
@@ -146,12 +144,11 @@ def test_create_new_account_personal_with_avatar(browser):
     
 # Проверка создание аккаунта с типом организация без аватара    
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qates43@tester.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
+    ("qates93@tehy.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
 ])
 def test_create_new_account_organization_without_avatar(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
     signup_page.go()
-    signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
     signup_page.confirm_password(confirm_password)
@@ -257,14 +254,13 @@ def test_open_profile_user(browser, email, password):
 
 # Проверка на количество оставшихся пропусков для нового юзера
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qate234sts3@ozester.com", "Qwerty12345!", "Qwerty12345!", "new")
+    ("qate2347sts3@ozester.com", "Qwerty12345!", "Qwerty12345!", "new")
 ])
 def test_remaining_passes_for_new_user(browser, email, password, confirm_password, user_name):
     signup_page = SignupPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
     signup_page.go()
-    signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
     signup_page.confirm_password(confirm_password)

@@ -19,17 +19,12 @@ class SignupPage:
     
     def __init__(self, driver: WebDriver) -> None:
         url = ConfigProvider().get("ui", "base_url")
-        self.__url = url+"login"
+        self.__url = url+"sign_up"
         self.__driver = driver
 
     @allure.step("Перейти на страницу авторизации")
     def go(self):
         self.__driver.get(self.__url)
-
-    def create_new_accaunt(self):
-        self.__driver.find_element(
-            By.XPATH,
-              "//a[@href='/sign_up']").click()
 
     def enter_email(self, email):
         try:
