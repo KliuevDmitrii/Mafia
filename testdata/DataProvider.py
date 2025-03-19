@@ -18,3 +18,7 @@ class DataProvider:
             return int(self.data.get(prop, default))
         except (ValueError, TypeError):
             print(f"Ошибка преобразования {prop} в int, возвращаю {default}")
+
+    def get_token(self) -> str:
+        """Получить токен."""
+        return self.get("token")

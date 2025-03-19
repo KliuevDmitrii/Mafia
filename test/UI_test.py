@@ -22,7 +22,8 @@ def test_open_page(browser):
     main_page = MainPage(browser)
     main_page.go()
 
-    assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
+    with allure.step("Проверить, что главная страница загружается"):
+        assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
 
 # Проверка авторизация зарегестрированного пользователя
 def auth_test(browser, test_data: dict):

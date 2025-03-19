@@ -10,6 +10,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
+from api.BoardApi import BoardApi
 
 @pytest.fixture
 def browser():
@@ -38,3 +39,12 @@ def browser():
 @pytest.fixture
 def test_data():
         return DataProvider()
+
+@pytest.fixture
+def api_client() -> BoardApi:
+    config = ConfigProvider()
+    data_provider = DataProvider()
+    return BoardApi(
+        config.get("api", "base_url"),
+        data_provider.get_token()
+    )
