@@ -1,10 +1,10 @@
 import allure
 from faker import Faker
-from api.BoardApi import BoardApi
+from api.MafiaApi import MafiaApi
 
 fake = Faker()
 
-def test_create_user(api_client: BoardApi):
+def test_create_user(api_client: MafiaApi):
     accountType = "INDIVIDUAL"
     email = fake.email()
     name = fake.name()
@@ -23,7 +23,7 @@ def test_create_user(api_client: BoardApi):
         assert last_user["name"] == name, f"Имя не совпадает! Ожидалось: {name}, Получено: {last_user['name']}"
         assert last_user["email"] == email, f"Email не совпадает! Ожидалось: {email}, Получено: {last_user['email']}"
 
-def test_change_username(api_client: BoardApi):
+def test_change_username(api_client: MafiaApi):
     accountType = "INDIVIDUAL"
     email = fake.email()
     name = fake.name()

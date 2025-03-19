@@ -10,7 +10,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
-from api.BoardApi import BoardApi
+from api.MafiaApi import MafiaApi
 
 @pytest.fixture
 def browser():
@@ -41,10 +41,10 @@ def test_data():
         return DataProvider()
 
 @pytest.fixture
-def api_client() -> BoardApi:
+def api_client() -> MafiaApi:
     config = ConfigProvider()
     data_provider = DataProvider()
-    return BoardApi(
+    return MafiaApi(
         config.get("api", "base_url"),
         data_provider.get_token()
     )

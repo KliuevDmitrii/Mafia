@@ -2,7 +2,7 @@ import allure
 import requests
 import json
 
-class BoardApi:
+class MafiaApi:
     """
     Этот класс предоставляет методы для выполнения действий с API
     """
