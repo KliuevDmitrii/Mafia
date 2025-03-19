@@ -26,15 +26,35 @@ class BoardApi:
             return resp.json()
         except json.JSONDecodeError:
             raise ValueError(f"Ошибка декодирования JSON. Ответ API: {resp.text}")
+        
+    @allure.step("Получить данные юзера по ID")
+    def get_user_by_ID(self, user_id):
+        if not user_id:
+            raise ValueError("user_id не может быть пустым или None")
+
+        path = f"{self.base_url}/user/{user_id}"
+        headers = {"Authorization": f"Bearer {self.token}"}
+    
+        resp = requests.get(path, headers=headers)
+
+        print(f"Status Code: {resp.status_code}, Response Text: {resp.text}")
+
+        try:
+            return resp.json()
+        except json.JSONDecodeError:
+            raise ValueError(f"Ошибка декодирования JSON. Ответ API: {resp.text}")
 
     @allure.step("Авторизоваться")
-    def auth_user(self):
-        path = f"{self.base_url}/auth/login"
-        params = {
-            "accessToken": self.token
+    def auth_user(self, email, password):
+        body = {
+        "email": email,
+        "password": password
     }
+        
+        path = f"{self.base_url}/auth/login"
+        headers = {"Authorization": f"Bearer {self.token}"}
 
-        resp = requests.post(path, params=params)
+        resp = requests.put(path, json=body, headers=headers)
 
         print(f"Status Code: {resp.status_code}, Response Text: {resp.text}")
 
