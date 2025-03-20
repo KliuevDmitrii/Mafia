@@ -5,8 +5,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
+from faker import Faker
 
 from configuration.ConfigProvider import ConfigProvider
+
 
 class LoginPage:
     """
@@ -17,6 +19,7 @@ class LoginPage:
         url = ConfigProvider().get("ui", "base_url")
         self.__url = url+"login"
         self.__driver = driver
+        self.fake = Faker()
 
     @allure.step("Перейти на главную страницу")
     def go(self):
@@ -86,4 +89,16 @@ class LoginPage:
                 "//button[@class='StyledButton_s17mzjxz' and @color='#ccc']"))
         )
         button.click()
+
+    def generate_invalid_email(self):
+        invalid_email_samples = [
+            self.fake.user_name(),
+            self.fake.domain_name(),
+            self.fake.user_name() + "@@",
+            self.fake.user_name() + "@com",
+            " " + self.fake.email(),
+            self.fake.email() + " ",
+            self.fake.email().replace("@", " ")
+        ]
+        return self.fake.random.choice(invalid_email_samples)
         

@@ -163,3 +163,12 @@ class SignupPage:
             return error_tooltip.is_displayed()
         except NoSuchElementException:
             return False
+        
+    @allure.step("Проверяем, что заголовок 'Create an account' отображается")
+    def is_create_account_header_displayed(self):
+        try:
+            return WebDriverWait(self.__driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'CustomFormHeader_')]/h1[text()='Create an account']"))
+            ).is_displayed()
+        except Exception:
+            return False

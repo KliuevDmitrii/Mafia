@@ -219,8 +219,29 @@ def test_negative_create_account_invalid_password(browser):
     with allure.step("Проверяем отображение ошибки валидации пароля"):
         assert signup_page.error_tooltip_password(), "Ошибка валидации пароля не отображается"
 
+# Проверка регистрации с не совпадающими паролями
+@allure.id("Mafia-UI-")
+@allure.title("Регистрация с не совпадающими паролями")
+def test_negative_create_account_password_not_match(browser):
+    email = fake.email()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    password_not_match = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    signup_page = SignupPage(browser)
+
+    signup_page.go()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(password_not_match)
+    signup_page.click_button_create_account()
+
+    with allure.step("Проверяем, что заголовок 'Create an account' остается на странице"):
+        assert signup_page.is_create_account_header_displayed(), "Заголовок 'Create an account' отсутствует, значит, произошел переход"
+
 
 # Проверка отображения текста о не валидном email при авторизации
+@allure.id("Mafia-UI-")
+@allure.title("Авторизация с невалидным email")
 @pytest.mark.parametrize("email", [
     ("qa@tester", "Qwerty1234!"),
     ("qatester.com", "Qwerty1234!"),
@@ -237,7 +258,22 @@ def test_invalid_email(browser, email):
     login_page.enter_email(email)
     error_text = login_page.invalid_email_format()
     
-    assert error_text == "Invalid Email Format", f"Ожидали текст ошибки 'Invalid Email Format', получили '{error_text}'"
+    with allure.step("Проверяем отображение ошибки"):
+        assert error_text == "Invalid Email Format", f"Ожидали текст ошибки 'Invalid Email Format', получили '{error_text}'"
+
+@allure.id("Mafia-UI-")
+@allure.title("Авторизация со случайным невалидным email (Faker)")
+def test_invalid_email_faker(browser):
+    login_page = LoginPage(browser)
+    invalid_email = login_page.generate_invalid_email()
+    login_page.go()
+    
+    with allure.step(f"Вводим случайный невалидный email: {invalid_email}"):
+        login_page.enter_email(invalid_email)
+    
+    with allure.step("Проверяем отображение ошибки"):
+        error_text = login_page.invalid_email_format()
+        assert error_text == "Invalid Email Format", f"Ожидали 'Invalid Email Format', получили '{error_text}'"
 
 # Проверка авторизации с невалидным email
 @pytest.mark.parametrize("email, password", [
