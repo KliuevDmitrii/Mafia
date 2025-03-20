@@ -18,6 +18,8 @@ fake = Faker()
 
 
 # Проверка открытия страницы
+@allure.id("Mafia-UI-1")
+@allure.title("Загрузка главной страницы")
 def test_open_page(browser):
     main_page = MainPage(browser)
     main_page.go()
@@ -26,10 +28,36 @@ def test_open_page(browser):
         assert main_page.is_page_loaded(), "Элемент с текстом 'Games on Ludio' не найден на странице."
 
 # Проверка авторизация зарегестрированного пользователя
-def auth_test(browser, test_data: dict):
-    username = test_data.get("username")
-    email = test_data.get("email")
-    password = test_data.get("pass")
+@allure.id("Mafia-UI-2.1")
+@allure.title("Авторизация зарегестрированного пользователя с типом персональный")
+def auth_user_individual_test(browser, test_data: dict):
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
+
+    login_page = LoginPage(browser)
+    main_page = MainPage(browser)
+    login_page.go()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+
+    with allure.step("Проверить, что пользователь авторизовался"):
+        assert main_page.is_div_element_name_user, "Имя пользователя отсутствует на странице"
+
+# Проверка авторизация зарегестрированного пользователя
+@allure.id("Mafia-UI-2.2")
+@allure.title("Авторизация зарегестрированного пользователя с типом организация")
+def auth_user_org_test(browser, test_data: dict):
+    user_data = test_data.get("ORGANIZATION")
+    if not user_data:
+        pytest.fail("Нет данных для ORGANIZATION пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
 
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
@@ -43,10 +71,15 @@ def auth_test(browser, test_data: dict):
     
 
 # Проверка выхода из профиля
+@allure.id("Mafia-UI-3")
+@allure.title("Выход из аккаунта зарегестрированного пользователя")
 def test_log_out_user(browser, test_data: dict):
-    username = test_data.get("username")
-    email = test_data.get("email")
-    password = test_data.get("pass")
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
     login_page = LoginPage(browser)
     login_page.go()
     login_page.enter_email(email)
@@ -58,6 +91,8 @@ def test_log_out_user(browser, test_data: dict):
         assert login_page.click_new_call_button(), "Кнопка нового звонка присутствует на странице"
 
 # Проверка смены имени (ПАДАЕТ, надо думать)
+@allure.id("Mafia-UI-4")
+@allure.title("Смена имени зарегестрированного пользователя")
 @pytest.mark.parametrize("email, password, new_name", [
     ("qa@tester.com", "Qwerty1234!", "TEST1")
 ])
@@ -144,24 +179,46 @@ def test_create_new_account_personal_with_avatar(browser):
         assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
     
 # Проверка создание аккаунта с типом организация без аватара    
-@pytest.mark.parametrize("email, password, confirm_password, user_name", [
-    ("qates93@tehy.com", "Qwerty1234!", "Qwerty1234!", "new_user3")
-])
-def test_create_new_account_organization_without_avatar(browser, email, password, confirm_password, user_name):
+def test_create_new_account_organization_without_avatar(browser):
+    email = f"{fake.user_name()}@hi2.in"
+    user_name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
     signup_page = SignupPage(browser)
     signup_page.go()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
-    signup_page.confirm_password(confirm_password)
+    signup_page.confirm_password(password)
     signup_page.click_button_create_account()
     signup_page.choose_username(user_name)
-    signup_page.account_type_organization()
     signup_page.on_checkbox_privacy_policy()
     signup_page.on_checkbox_community_guidelines()
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
 
     assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
+
+# Проверка регистрации с невалидным паролем
+@allure.id("Mafia-UI-")
+@allure.title("Регистрация с невалидным паролем")
+def test_negative_create_account_invalid_password(browser):
+    invalid_passwords = [
+    fake.pystr(min_chars=1, max_chars=5),
+    fake.pystr(min_chars=21, max_chars=25),
+    fake.password(length=8) + " ",
+    "пароль123!",
+    fake.numerify(text="#" * 8),
+    fake.pystr(min_chars=6, max_chars=20).upper(),
+    fake.pystr(min_chars=6, max_chars=20).lower()
+    ]
+
+    signup_page = SignupPage(browser)
+    signup_page.go()
+    signup_page.enter_password(invalid_passwords)
+
+    with allure.step("Проверяем отображение ошибки валидации пароля"):
+        assert signup_page.error_tooltip_password(), "Ошибка валидации пароля не отображается"
+
 
 # Проверка отображения текста о не валидном email при авторизации
 @pytest.mark.parametrize("email", [
@@ -249,7 +306,7 @@ def test_open_profile_user(browser, email, password):
     login_page.enter_email(email)
     login_page.enter_password(password)
     login_page.click_button_log_in()
-    main_page.click_name_user()
+    main_page.click_avatar_user()
 
     assert email == profile_page.check_user_email(), "Email в профиле не совпадает с введенным"
 
@@ -312,7 +369,6 @@ def test_add_credit_card(browser, email, password, confirm_password, user_name, 
     is_valid = profile_page.check_new_card_add(expected_last_four_digits)
     
     assert is_valid, f"Ожидаемые последние 4 цифры: {expected_last_four_digits}, но отображается другая информация"
-    # 
 
 
 

@@ -141,7 +141,7 @@ class SignupPage:
         except TimeoutException:
            return False
 
-    def add_avatar_photo(self, file_path: str):
+    def add_avatar_photo(self, file_path):
         button = self.__driver.find_element(
         By.XPATH,
         '//button[@class="StyledButton_s17mzjxz" and text()="Upload an avatar photo"]'
@@ -152,5 +152,14 @@ class SignupPage:
         EC.presence_of_element_located((
             By.XPATH,
             '//input[@type="file"]'))
-    )
+        )
         file_input.send_keys(file_path)
+
+    def error_tooltip_password(self):
+        try:
+            error_tooltip = self.__driver.find_element(
+            By.XPATH, "//div[contains(@class, 'ErrorHintContainer_')]/div[contains(@class, 'StyledTooltipContainer_')]/div[contains(@class, 'Container_')]"
+            )
+            return error_tooltip.is_displayed()
+        except NoSuchElementException:
+            return False

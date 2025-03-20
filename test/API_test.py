@@ -4,9 +4,28 @@ from api.MafiaApi import MafiaApi
 
 fake = Faker()
 
-def test_create_user(api_client: MafiaApi):
+def test_create_user_individual(api_client: MafiaApi):
     accountType = "INDIVIDUAL"
     email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    user_list_before = api_client.get_users()
+    api_client.create_user(accountType, email, name, password)
+    user_list_after = api_client.get_users()
+
+    with allure.step("Проверить, что список общего количества юзеров увеличился на одного после добавления нового юзера"):
+        assert len(user_list_after) - len(user_list_before) == 1
+
+    last_user = user_list_after[-1]
+
+    with allure.step("Проверить, что имя и email последнего созданного юзера совпадают с ожидаемыми"):
+        assert last_user["name"] == name, f"Имя не совпадает! Ожидалось: {name}, Получено: {last_user['name']}"
+        assert last_user["email"] == email, f"Email не совпадает! Ожидалось: {email}, Получено: {last_user['email']}"
+
+def test_create_user_organization(api_client: MafiaApi):
+    accountType = "ORGANIZATION"
+    email = f"{fake.user_name()}@hi2.in"
     name = fake.name()
     password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
 
