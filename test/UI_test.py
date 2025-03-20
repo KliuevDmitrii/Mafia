@@ -241,16 +241,30 @@ def test_negative_create_account_password_not_match(browser):
 
 # Проверка отображения текста о не валидном email при авторизации
 @allure.id("Mafia-UI-")
-@allure.title("Авторизация с невалидным email")
+@allure.title("Отображение ошибки при вводе не валидного email")
 @pytest.mark.parametrize("email", [
-    ("qa@tester", "Qwerty1234!"),
-    ("qatester.com", "Qwerty1234!"),
-    ("qa@@tester.com", "Qwerty1234!"),
-    ("qа@tester.com", "Qwerty1234!"),
-    ("q", "Qwerty1234!"),
-    ("qa@tester.com ", "Qwerty1234!"),
-    ("", "Qwerty1234!"),
-    (" qa@tester.com", "Qwerty1234!")
+    ("qa@tester", "Qwerty1234!"),  # Нет доменной зоны
+    ("qatester.com", "Qwerty1234!"),  # Нет @
+    ("qa@@tester.com", "Qwerty1234!"),  # Двойной @
+    ("qа@tester.com", "Qwerty1234!"),  # Кириллический символ "а"
+    ("q", "Qwerty1234!"),  # Односимвольный email
+    ("qa@tester.com ", "Qwerty1234!"),  # Пробел в конце
+    ("", "Qwerty1234!"),  # Пустая строка
+    (" qa@tester.com", "Qwerty1234!"),  # Пробел в начале
+    ("@tester.com", "Qwerty1234!"),  # Нет локальной части
+    ("qa@", "Qwerty1234!"),  # Нет домена
+    ("qa@testercom", "Qwerty1234!"),  # Нет точки в домене
+    ("qa..tester@tester.com", "Qwerty1234!"),  # Двойная точка
+    ("qa!#%&*{}[]/=?^`+@tester.com", "Qwerty1234!"),  # Спецсимволы
+    ("тест@tester.com", "Qwerty1234!"),  # Кириллица в email
+    ("qa @tester.com", "Qwerty1234!"),  # Пробел внутри
+    ("qa\t@tester.com", "Qwerty1234!"),  # Табуляция внутри
+    ("qa@tester,com", "Qwerty1234!"),  # Запятая вместо точки
+    ("a" * 250 + "@tester.com", "Qwerty1234!"),  # Длинный email
+    ("qa@tester.", "Qwerty1234!"),  # Нет доменного суффикса
+    ("qa@tester..com", "Qwerty1234!"),  # Двойной суффикс
+    ('"qa"@tester.com', "Qwerty1234!"),  # Кавычки в локальной части
+    ("qa😀@tester.com", "Qwerty1234!"),  # Эмодзи в email
 ])
 def test_invalid_email(browser, email):
     login_page = LoginPage(browser)
@@ -276,17 +290,44 @@ def test_invalid_email_faker(browser):
         assert error_text == "Invalid Email Format", f"Ожидали 'Invalid Email Format', получили '{error_text}'"
 
 # Проверка авторизации с невалидным email
+@allure.id("Mafia-UI-InvalidEmailLogin")
+@allure.title("Авторизация с невалидным email, кнопка 'Login' не активна")
 @pytest.mark.parametrize("email, password", [
-    ("qa@@tester.com", "Qwerty1234!"),
-    ("qa@tester.com ", "")
+    ("qa@tester", "Qwerty1234!"),  # Нет доменной зоны
+    ("qatester.com", "Qwerty1234!"),  # Нет @
+    ("qa@@tester.com", "Qwerty1234!"),  # Двойной @
+    ("qа@tester.com", "Qwerty1234!"),  # Кириллический символ "а"
+    ("q", "Qwerty1234!"),  # Односимвольный email
+    ("qa@tester.com ", "Qwerty1234!"),  # Пробел в конце
+    ("", "Qwerty1234!"),  # Пустая строка
+    (" qa@tester.com", "Qwerty1234!"),  # Пробел в начале
+    ("@tester.com", "Qwerty1234!"),  # Нет локальной части
+    ("qa@", "Qwerty1234!"),  # Нет домена
+    ("qa@testercom", "Qwerty1234!"),  # Нет точки в домене
+    ("qa..tester@tester.com", "Qwerty1234!"),  # Двойная точка
+    ("qa!#%&*{}[]/=?^`+@tester.com", "Qwerty1234!"),  # Спецсимволы
+    ("тест@tester.com", "Qwerty1234!"),  # Кириллица в email
+    ("qa @tester.com", "Qwerty1234!"),  # Пробел внутри
+    ("qa\t@tester.com", "Qwerty1234!"),  # Табуляция внутри
+    ("qa@tester,com", "Qwerty1234!"),  # Запятая вместо точки
+    ("a" * 250 + "@tester.com", "Qwerty1234!"),  # Длинный email
+    ("qa@tester.", "Qwerty1234!"),  # Нет доменного суффикса
+    ("qa@tester..com", "Qwerty1234!"),  # Двойной суффикс
+    ('"qa"@tester.com', "Qwerty1234!"),  # Кавычки в локальной части
+    ("qa😀@tester.com", "Qwerty1234!"),  # Эмодзи в email
 ])
 def test_login_user_invalid_email(browser, email, password):
     login_page = LoginPage(browser)
     login_page.go()
-    login_page.enter_email(email)
-    login_page.enter_password(password)
 
-    assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
+    with allure.step(f"Вводим email: {email}"):
+        login_page.enter_email(email)
+
+    with allure.step(f"Вводим пароль: {password}"):
+        login_page.enter_password(password)
+
+    with allure.step("Проверяем, что кнопка 'Login' не активна"):
+        assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
 
 # Проверка сброса пароля
 @pytest.mark.parametrize("email", [
