@@ -112,24 +112,28 @@ class SignupPage:
         )
         chekbox.click()
 
+    @allure.step("Нажать кнопку продолжить")
     def click_button_continue(self):
         self.__driver.find_element(
             By.XPATH,
             "//button[@class='StyledButton_s17mzjxz' and text()='Continue' and not(@disabled)]"
             ).click()
 
+    @allure.step("Нажать кнопку продолжить без аватара")
     def click_button_continue_without_avatar(self):
         button = self.__driver.find_element(
                     By.XPATH,
                     "//button[text()='Continue without an avatar']")
         button.click()
     
+    @allure.step("Нажать кнопку на втором шаге регистрации нового пользователя")
     def click_button_continue_step_2(self):
         button = self.__driver.find_element(
                     By.XPATH,
                     '//button[@class="StyledButton_s17mzjxz" and text()="Continue"]')
         button.click()
 
+    @allure.step("Имя юзера отображается")
     def is_username_displayed(self, user_name):
         try:
             displayed_name = WebDriverWait(self.__driver, 10).until(
@@ -141,6 +145,7 @@ class SignupPage:
         except TimeoutException:
            return False
 
+    @allure.step("Добавить аватар")
     def add_avatar_photo(self, file_path):
         button = self.__driver.find_element(
         By.XPATH,
@@ -155,6 +160,7 @@ class SignupPage:
         )
         file_input.send_keys(file_path)
 
+    @allure.step("Проверяем отображение ошибки валидации пароля")
     def error_tooltip_password(self):
         try:
             error_tooltip = self.__driver.find_element(

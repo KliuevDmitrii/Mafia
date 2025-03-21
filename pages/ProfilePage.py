@@ -68,6 +68,7 @@ class ProfilePage:
                 f'//*[@id="root"]/div/div/div[2]/div/div[2]/div/div[1]/div[3]/div[2]/div/div/input'
             ))
         )
+        time.sleep(5)
         input_field.clear()
         input_field.send_keys(pronouns)
         return input_field.get_attribute("value")

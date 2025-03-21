@@ -16,7 +16,6 @@ from pages.ProfilePage import ProfilePage
 
 fake = Faker()
 
-
 # Проверка открытия страницы
 @allure.id("Mafia-UI-1")
 @allure.title("Загрузка главной страницы")
@@ -112,13 +111,21 @@ def test_change_name(browser, email, password, new_name):
     assert new_name == profile_page.check_user_name(), "Новое имя в профиле не совпадает с введенным"
 
 # Проверка добавления местоимения
-@pytest.mark.parametrize("email, password, pronouns", [
-    ("qa@tester.com", "Qwerty1234!", "He")
-])
-def test_add_pronouns(browser, email, password, pronouns):
+@allure.id("Mafia-UI-5")
+@allure.title("Добавление местоимения в профиль")
+def test_add_pronouns(browser,  test_data: dict):
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
+    pronouns = fake.prefix()
+
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
+
     login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
@@ -128,9 +135,12 @@ def test_add_pronouns(browser, email, password, pronouns):
     profile_page.input_pronouns(pronouns)
     profile_page.click_button_save()
 
-    assert pronouns == profile_page.check_user_pronouns(), "Новое местоимение не совпадает с введённым"
+    with allure.step("Проверяем, что местоимение сохранено корректно"):
+        assert pronouns == profile_page.check_user_pronouns(), "Новое местоимение не совпадает с введённым"
 
 # Проверка создания нового персонального аккаунта без аватара
+@allure.id("Mafia-UI-6.1")
+@allure.title("Создание нового юзера с типом персональный без аватара")
 def test_create_new_account_personal_without_avatar(browser):
     email = fake.email()
     password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
@@ -154,6 +164,8 @@ def test_create_new_account_personal_without_avatar(browser):
         assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
 # Проверка создания нового персонального аккаунта с аватаром
+@allure.id("Mafia-UI-6.2")
+@allure.title("Создание нового юзера с типом персональный с аватаром")
 def test_create_new_account_personal_with_avatar(browser):
     email = fake.email()
     password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
@@ -179,6 +191,8 @@ def test_create_new_account_personal_with_avatar(browser):
         assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
     
 # Проверка создание аккаунта с типом организация без аватара    
+@allure.id("Mafia-UI-7.1")
+@allure.title("Создание нового юзера с типом организация без аватара")
 def test_create_new_account_organization_without_avatar(browser):
     email = f"{fake.user_name()}@hi2.in"
     user_name = fake.name()
@@ -196,12 +210,13 @@ def test_create_new_account_organization_without_avatar(browser):
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
 
-    assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
+    with allure.step("Проверить, что имя нового пользователя отображается на главной странице"):
+        assert signup_page.is_username_displayed(user_name), f"Имя пользователя '{user_name}' не отображается на странице."
 
 # Проверка регистрации с невалидным паролем
 @allure.id("Mafia-UI-")
-@allure.title("Регистрация с невалидным паролем")
-def test_negative_create_account_invalid_password(browser):
+@allure.title("Регистрация с невалидным паролем (Faker)")
+def test_negative_create_account_invalid_password_faker(browser):
     invalid_passwords = [
     fake.pystr(min_chars=1, max_chars=5),
     fake.pystr(min_chars=21, max_chars=25),
@@ -218,6 +233,26 @@ def test_negative_create_account_invalid_password(browser):
 
     with allure.step("Проверяем отображение ошибки валидации пароля"):
         assert signup_page.error_tooltip_password(), "Ошибка валидации пароля не отображается"
+
+# Проверка регистрации с невалидным паролем
+@allure.id("Mafia-UI-")
+@allure.title("Регистрация с невалидным паролем")
+@pytest.mark.parametrize("password", [
+    ("q"),
+    ("qwert"),
+    ("qwertyuiopasdfghjklla"),
+    ("qwerty "),
+    ("qwertyА123"),
+    ("qwe rty ")
+])
+def test_negative_create_account_invalid_password(browser, password):
+    signup_page = SignupPage(browser)
+
+    signup_page.go()
+    signup_page.enter_password(password)
+
+    with allure.step("Проверяем отображение ошибки валидации пароля"):
+        assert signup_page.error_tooltip_password(), f"Ошибка валидации пароля '{password}' не отображается"
 
 # Проверка регистрации с не совпадающими паролями
 @allure.id("Mafia-UI-")
