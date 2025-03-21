@@ -92,13 +92,19 @@ def test_log_out_user(browser, test_data: dict):
 # Проверка смены имени (ПАДАЕТ, надо думать)
 @allure.id("Mafia-UI-4")
 @allure.title("Смена имени зарегестрированного пользователя")
-@pytest.mark.parametrize("email, password, new_name", [
-    ("qa@tester.com", "Qwerty1234!", "TEST1")
-])
-def test_change_name(browser, email, password, new_name):
+def test_change_name(browser, test_data: dict):
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
+    new_name = fake.name()
+
     login_page = LoginPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
+
     login_page.go()
     login_page.enter_email(email)
     login_page.enter_password(password)
@@ -110,7 +116,7 @@ def test_change_name(browser, email, password, new_name):
 
     assert new_name == profile_page.check_user_name(), "Новое имя в профиле не совпадает с введенным"
 
-# Проверка добавления местоимения
+# Проверка добавления местоимения (ПАДАЕТ, надо думать)
 @allure.id("Mafia-UI-5")
 @allure.title("Добавление местоимения в профиль")
 def test_add_pronouns(browser,  test_data: dict):
@@ -243,7 +249,7 @@ def test_negative_create_account_invalid_password_faker(browser):
     ("qwertyuiopasdfghjklla"),
     ("qwerty "),
     ("qwertyА123"),
-    ("qwe rty ")
+    ("qwe rty")
 ])
 def test_negative_create_account_invalid_password(browser, password):
     signup_page = SignupPage(browser)

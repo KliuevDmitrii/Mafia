@@ -112,6 +112,39 @@ class SignupPage:
         )
         chekbox.click()
 
+    @allure.step("Нажать на ссылку 'Terms of Service'")
+    def click_terms_of_service(self):
+        try:
+            terms_link = WebDriverWait(self.__driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@href, 'termly.io/document/terms-of-use-for-website') and contains(text(), 'Terms of Service')]"))
+            )
+            terms_link.click()
+        except Exception as e:
+            allure.attach(self.__driver.get_screenshot_as_png(), name="terms_of_service_error", attachment_type=allure.attachment_type.PNG)
+            raise AssertionError(f"Не удалось нажать на ссылку 'Terms of Service': {e}")
+        
+    @allure.step("Нажать на ссылку 'Privacy Policy'")
+    def click_privacy_policy(self):
+        try:
+            privacy_link = WebDriverWait(self.__driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@href, 'termly.io/document/privacy-policy') and contains(text(), 'Privacy Policy')]"))
+            )
+            privacy_link.click()
+        except Exception as e:
+            allure.attach(self.__driver.get_screenshot_as_png(), name="privacy_policy_error", attachment_type=allure.attachment_type.PNG)
+            raise AssertionError(f"Не удалось нажать на ссылку 'Privacy Policy': {e}")
+        
+    @allure.step("Нажать на ссылку 'Community Guidelines'")
+    def click_community_guidelines(self):
+        try:
+            community_link = WebDriverWait(self.__driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@href, 'bit.ly/ludio-community-guidelines') and contains(text(), 'Community Guidelines')]"))
+            )
+            community_link.click()
+        except Exception as e:
+            allure.attach(self.__driver.get_screenshot_as_png(), name="community_guidelines_error", attachment_type=allure.attachment_type.PNG)
+            raise AssertionError(f"Не удалось нажать на ссылку 'Community Guidelines': {e}")
+
     @allure.step("Нажать кнопку продолжить")
     def click_button_continue(self):
         self.__driver.find_element(

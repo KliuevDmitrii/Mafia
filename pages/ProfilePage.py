@@ -38,7 +38,7 @@ class ProfilePage:
         input_field = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                f'//*[@id="root"]/div/div/div[2]/div/div[2]/div/div[1]/div[3]/div[1]/div/div/input'
+                f"//p[contains(@class, 'DescriptionTextCustom_d16oteua')][contains(text(), 'Username')]/following-sibling::div//input"
                 ))
             )
         time.sleep(5)
@@ -65,11 +65,11 @@ class ProfilePage:
         input_field = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH,
-                f'//*[@id="root"]/div/div/div[2]/div/div[2]/div/div[1]/div[3]/div[2]/div/div/input'
+                f"//p[contains(@class, 'DescriptionTextCustom_d16oteua')][contains(text(), 'Pronouns')]/following-sibling::div//input"
             ))
         )
-        time.sleep(5)
         input_field.clear()
+        time.sleep(5)
         input_field.send_keys(pronouns)
         return input_field.get_attribute("value")
     
