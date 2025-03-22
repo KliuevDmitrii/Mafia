@@ -163,6 +163,16 @@ def test_create_new_account_personal_without_avatar(browser):
     signup_page.account_type_personal()
     signup_page.on_checkbox_privacy_policy()
     signup_page.on_checkbox_community_guidelines()
+
+    with allure.step("Проверить открытие Terms of Service в новой вкладке"):
+        signup_page.click_terms_of_service_and_verify_new_tab()
+
+    with allure.step("Проверить открытие Privacy Policy в новой вкладке"):
+        signup_page.click_privacy_policy_and_verify_new_tab()
+
+    with allure.step("Проверить открытие Community Guidelines в новой вкладке"):
+        signup_page.click_community_guidelines_and_verify_new_tab()
+
     signup_page.click_button_continue()
     signup_page.click_button_continue_without_avatar()
 
