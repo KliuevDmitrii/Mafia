@@ -54,7 +54,7 @@ class MafiaApi:
         path = f"{self.base_url}/auth/login"
         headers = {"Authorization": f"Bearer {self.token}"}
 
-        resp = requests.put(path, json=body, headers=headers)
+        resp = requests.post(path, json=body, headers=headers)
 
         print(f"Status Code: {resp.status_code}, Response Text: {resp.text}")
 
