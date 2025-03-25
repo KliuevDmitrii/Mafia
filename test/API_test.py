@@ -238,3 +238,56 @@ def test_negative_login_invalid_username(api_client: MafiaApi, test_data: DataPr
         assert any(phrase in error_message for phrase in expected_phrases), (
             f"Ожидалось сообщение о ненайденном пользователе, но получено: {error_message}"
         )
+
+@allure.title("Проверка создания пользователя с существующим email (ожидается 409 Conflict)")
+def test_create_user_with_existing_email(api_client: MafiaApi, test_data: DataProvider):
+    """
+    Тест проверяет, что при попытке регистрации с уже существующим email
+    возвращается статус 409 Conflict с соответствующим сообщением об ошибке.
+    Проверяет:
+    1. Статус код 409 в ответе
+    2. Наличие сообщения о конфликте email
+    3. Структуру ответа об ошибке
+    """
+    # 1. Получаем данные существующего пользователя
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя в тестовых данных")
+
+    # 2. Подготовка тестовых данных
+    accountType = "INDIVIDUAL"
+    existing_email = user_data.get("email")  # Берем email существующего пользователя
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, 
+                           digits=True, upper_case=True, lower_case=True)
+
+    # 3. Попытка создания пользователя с существующим email
+    with allure.step(f"Попытка регистрации с email {existing_email}"):
+        response = api_client.create_user(accountType, existing_email, name, password)
+        
+        # Логирование для отладки
+        print(f"Response: {response}")
+        allure.attach(str(response), name="API Response", attachment_type=allure.attachment_type.JSON)
+
+     # 4. Проверка структуры ответа
+    with allure.step("Проверка структуры ответа"):
+        assert isinstance(response, dict), "Ответ должен быть словарем"
+        assert "error" in response, "Ответ должен содержать поле 'error'"
+
+    # 5. Проверка кода ошибки
+    with allure.step("Проверка кода ошибки 409"):
+        error_message = response["error"]
+        assert "409" in error_message, (
+            f"Ожидалась ошибка 409 Conflict, но получено: {error_message}"
+        )
+
+    # 6. Дополнительная проверка через прямой запрос
+    with allure.step("Дополнительная проверка через GET запрос"):
+        try:
+            user_list = api_client.get_users()
+            emails = [user["email"] for user in user_list]
+            assert existing_email in emails, (
+                f"Email {existing_email} не найден в списке пользователей после попытки повторной регистрации"
+            )
+        except Exception as e:
+            pytest.fail(f"Ошибка при проверке списка пользователей: {str(e)}")
