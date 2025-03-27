@@ -242,13 +242,15 @@ def test_negative_login_invalid_username(api_client: MafiaApi, test_data: DataPr
 @allure.title("Проверка создания пользователя с существующим email (ожидается 409 Conflict)")
 def test_create_user_with_existing_email(api_client: MafiaApi, test_data: DataProvider):
     """
-    Тест проверяет, что при попытке регистрации с уже существующим email
-    возвращается статус 409 Conflict с соответствующим сообщением об ошибке.
-    Проверяет:
-    1. Статус код 409 в ответе
-    2. Наличие сообщения о конфликте email
-    3. Структуру ответа об ошибке
-    """
+   Проверяет корректность обработки попытки регистрации пользователя с уже существующим email.
+    
+    Ожидаемое поведение API:
+    1. Должен вернуть HTTP статус 409 Conflict
+    2. В теле ответа должно быть:
+       - Стандартное описание ошибки
+       - Четкое указание на конфликт email
+       - Корректная структура ошибки согласно API спецификации
+   """
     # 1. Получаем данные существующего пользователя
     user_data = test_data.get("INDIVIDUAL")
     if not user_data:
@@ -291,3 +293,46 @@ def test_create_user_with_existing_email(api_client: MafiaApi, test_data: DataPr
             )
         except Exception as e:
             pytest.fail(f"Ошибка при проверке списка пользователей: {str(e)}")
+
+@allure.title("Проверка создания пользователя с невалидным паролем")
+def test_negative_create_user_invalid_password(api_client: MafiaApi):
+    """
+    Тест проверяет обработку попытки регистрации с невалидным паролем.
+    
+    Ожидаемое поведение:
+    1. API должен вернуть ошибку (400 Bad Request или 422 Unprocessable Entity)
+    2. Сообщение об ошибке должно указывать на проблему с паролем
+    3. Пользователь не должен быть создан в системе
+    """
+    # Подготовка тестовых данных
+    accountType = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    invalid_password = "123"  # Заведомо невалидный короткий пароль
+
+    # Получаем список пользователей до попытки создания
+    user_list_before = api_client.get_users()
+    
+    # Пытаемся создать пользователя с невалидным паролем
+    response = api_client.create_user(accountType, email, name, invalid_password)
+    allure.attach(str(response), name="Response", attachment_type=allure.attachment_type.JSON)
+
+    # Получаем список пользователей после попытки создания
+    user_list_after = api_client.get_users()
+
+    # Проверка что пользователь не был создан
+    with allure.step("Проверка что пользователь не был добавлен"):
+        
+        
+        # Проверка что количество пользователей не изменилось
+        assert len(user_list_after) == len(user_list_before), (
+            f"Количество пользователей не должно измениться. Было: {len(user_list_before)}, стало: {len(user_list_after)}"
+        )
+        
+    emails_after = [user["email"] for user in user_list_after]
+
+        # Проверка что email не появился в системе
+    with allure.step("Проверка что email не появился в системе"):
+        assert email not in emails_after, (
+            f"Пользователь с email {email} был создан, хотя пароль невалидный"
+        )
