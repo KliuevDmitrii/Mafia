@@ -467,14 +467,13 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
 
 # Проверка на добавление банковской карты для для нового пользователя
 @pytest.mark.parametrize("email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name", [
-    ("qate235@teyte.kn", "Qwerty12345!", "Qwerty12345!", "new", 4242424242424242, 1234, 123, "Test User")
+    ("qate235@teyte.ket", "Qwerty12345!", "Qwerty12345!", "new", 4242424242424242, 1234, 123, "Test User")
 ])
 def test_add_credit_card(browser, email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name):
     signup_page = SignupPage(browser)
     main_page = MainPage(browser)
     profile_page = ProfilePage(browser)
     signup_page.go()
-    signup_page.create_new_accaunt()
     signup_page.enter_email(email)
     signup_page.enter_password(password)
     signup_page.confirm_password(confirm_password)

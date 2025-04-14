@@ -48,3 +48,24 @@ def api_client() -> MafiaApi:
         config.get("api", "base_url"),
         data_provider.get_token()
     )
+
+@pytest.fixture
+def authorized_api_client():
+    config = ConfigProvider()
+    data_provider = DataProvider()
+
+    base_url = config.get("api", "base_url")
+    email = data_provider.get("INDIVIDUAL")["email"]
+    password = data_provider.get("INDIVIDUAL")["pass"]
+
+    temp_api = MafiaApi(base_url, token="")
+
+    with allure.step("Авторизация INDIVIDUAL пользователя через API"):
+        auth_response = temp_api.auth_user(email, password)
+
+        if "accessToken" not in auth_response:
+            raise Exception(f"Авторизация не удалась: {auth_response}")
+
+        token = auth_response["accessToken"]
+
+    return MafiaApi(base_url, token=token)

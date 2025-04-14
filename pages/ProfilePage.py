@@ -9,6 +9,10 @@ from selenium.webdriver.common.keys import Keys
 
 from configuration.ConfigProvider import ConfigProvider
 
+from faker import Faker
+
+fake = Faker()
+
 class ProfilePage:
     """
     Этот класс предоставляет методы для выполнения действий на странице профиля пользователя.
@@ -237,6 +241,19 @@ class ProfilePage:
         cardholder_field.send_keys(cardholder_name)
 
         self.__driver.switch_to.default_content()  # Возвращаемся к основной странице
+
+    # @allure.step("Ввести: имя держателя карты")
+    # def add_cardholder_name(self, cardholder_name: str):
+    #     """Добавляет информацию о карте (имя владельца)."""
+    #     time.sleep(4)
+    #     cardholder_field = WebDriverWait(self.__driver, 10).until(
+    #         EC.presence_of_element_located((
+    #             By.XPATH,
+    #             "//input[@placeholder='Cardholder name']"
+    #         ))
+    #     )
+    #     cardholder_field.clear()
+    #     cardholder_field.send_keys(cardholder_name)
 
     @allure.step("Нажать кнопку Start my subscription")
     def click_button_start_my_subscription(self):
