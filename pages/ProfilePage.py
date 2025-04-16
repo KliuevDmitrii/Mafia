@@ -6,6 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
+import re
+
 
 from configuration.ConfigProvider import ConfigProvider
 
@@ -191,10 +193,10 @@ class ProfilePage:
         )
         continue_button.click()
 
-    @allure.step("Ввести: номер карты, срок действия карты, CVC карты, имя держателя карты")
-    def add_card(self, card_number: int, card_date: int, card_cvc: int, cardholder_name: str):
+    @allure.step("Ввести: номер карты, срок действия карты, CVC карты")
+    def add_card(self, card_number: int, card_date: int, card_cvc: int):
         """Добавляет информацию о карте (номер, срок действия, CVC и имя владельца)."""
-        time.sleep(4)
+        time.sleep(2)
         iframe = WebDriverWait(self.__driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[src*='elements-inner-card']"))
         )
@@ -230,7 +232,12 @@ class ProfilePage:
         cvc_field.clear()
         cvc_field.send_keys(card_cvc)
 
-        # Ввод имени держателя карты
+        self.__driver.switch_to.default_content()
+
+    @allure.step("Ввести: имя держателя карты")
+    def add_cardholder_name(self, cardholder_name: str):
+        """Добавляет информацию о карте (имя владельца)."""
+        time.sleep(1)
         cardholder_field = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH,
@@ -239,21 +246,6 @@ class ProfilePage:
         )
         cardholder_field.clear()
         cardholder_field.send_keys(cardholder_name)
-
-        self.__driver.switch_to.default_content()  # Возвращаемся к основной странице
-
-    # @allure.step("Ввести: имя держателя карты")
-    # def add_cardholder_name(self, cardholder_name: str):
-    #     """Добавляет информацию о карте (имя владельца)."""
-    #     time.sleep(4)
-    #     cardholder_field = WebDriverWait(self.__driver, 10).until(
-    #         EC.presence_of_element_located((
-    #             By.XPATH,
-    #             "//input[@placeholder='Cardholder name']"
-    #         ))
-    #     )
-    #     cardholder_field.clear()
-    #     cardholder_field.send_keys(cardholder_name)
 
     @allure.step("Нажать кнопку Start my subscription")
     def click_button_start_my_subscription(self):
@@ -291,15 +283,16 @@ class ProfilePage:
     @allure.step("Закрыть окно добавления метода оплаты")
     def close_popup_payment_settings(self):
         """Закрывает окно добавления метода оплаты."""
+        time.sleep(4)
         WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
-                "//div[contains(@style, 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3Zn')]"
+                "//div[@class='ModalCloseContainer_m1me4ic5']//div[@class='StyledIcon_s1e2ohca']"
             ))
         ).click()
 
     @allure.step("Проверка добавления новой карты")
-    def check_new_card_add(self):
+    def check_new_card_add(self, expected_last_four):
         """Проверяет добавление новой карты."""
         card_number = WebDriverWait(self.__driver, 10).until(
                 EC.presence_of_element_located((
@@ -308,6 +301,7 @@ class ProfilePage:
             ))
         )
         displayed_card_number = card_number.text
+        return displayed_card_number.endswith(expected_last_four)
 
 
     @allure.step("Проверка оставшихся Remaining passes")

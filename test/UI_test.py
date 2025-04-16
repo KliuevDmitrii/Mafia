@@ -467,7 +467,7 @@ def test_remaining_passes_for_new_user(browser, email, password, confirm_passwor
 
 # Проверка на добавление банковской карты для для нового пользователя
 @pytest.mark.parametrize("email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name", [
-    ("qate235@teyte.ket", "Qwerty12345!", "Qwerty12345!", "new", 4242424242424242, 1234, 123, "Test User")
+    ("qatue932@teye.jrp", "Qwerty12345!", "Qwerty12345!", "new", 4242424242424242, 1234, 123, "Test User")
 ])
 def test_add_credit_card(browser, email, password, confirm_password, user_name, card_number, card_date, card_cvc, cardholder_name):
     signup_page = SignupPage(browser)
@@ -489,12 +489,14 @@ def test_add_credit_card(browser, email, password, confirm_password, user_name, 
     profile_page.click_button_update()
     profile_page.subscription_plan_monthly()
     profile_page.click_button_continue()
-    profile_page.add_card(card_number, card_date, card_cvc, cardholder_name)
+    profile_page.add_card(card_number, card_date, card_cvc)
+    profile_page.add_cardholder_name(cardholder_name)
     profile_page.click_button_start_my_subscription()
     profile_page.click_button_confirm()
-    expected_last_four_digits = card_number[-4:]
+    profile_page.close_popup_payment_settings()
+    expected_last_four_digits = str(card_number)[-4:]
     is_valid = profile_page.check_new_card_add(expected_last_four_digits)
-    
+
     assert is_valid, f"Ожидаемые последние 4 цифры: {expected_last_four_digits}, но отображается другая информация"
 
 
