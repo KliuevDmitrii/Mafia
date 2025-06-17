@@ -5,8 +5,10 @@ import allure
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
@@ -22,9 +24,23 @@ def browser():
         browser_name = browser_name.lower() if browser_name else "chrome"
 
         if browser_name == 'chrome':
-            browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+            options = webdriver.ChromeOptions()
+            browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+
         elif browser_name in ['ff', 'firefox']:
-            browser = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
+            options = webdriver.FirefoxOptions()
+            browser = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options)
+
+        elif browser_name == 'edge':
+            options = webdriver.EdgeOptions()
+            browser = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+
+        elif browser_name == 'brave':
+            options = webdriver.ChromeOptions()
+            brave_path = config.get("ui", "brave_path", fallback="/usr/bin/brave-browser")
+            options.binary_location = brave_path
+            browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+
         else:
             raise ValueError(f"Неизвестное значение browser_name: {browser_name}")
 
@@ -34,7 +50,7 @@ def browser():
     yield browser
 
     with allure.step("Закрыть браузер"):
-            browser.quit()
+        browser.quit()
 
 @pytest.fixture
 def test_data():

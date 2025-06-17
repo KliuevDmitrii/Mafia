@@ -60,8 +60,10 @@ allure open allure-report
 base_url=https://dev.ludio.gg/  
 timeout=4  
 
-#chrome | ff
-browser_name=chrome
+# chrome | ff | firefox | edge | brave
+browser_name=brave
+brave_path=/usr/bin/brave-browser
+# или путь под Windows: C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe
 
 [api]  
 base_url=https://dev.ludio.gg/api
