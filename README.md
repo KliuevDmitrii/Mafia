@@ -1,37 +1,101 @@
 # Mafia
 
-### Шаги
-1. Склонировать проект 'git clone https://github.com/KliuevDmitrii/Mafia.git'
-2. Установить зависимости 'pip3 install > -r requirements.txt'
-3. Запустить тесты 'pytest'
-4. Сгенерировать отчет 'allure generate allure-files -o allure-report'
-5. Открыть отчет 'allure open allure-report'
+## Шаги
+1. Склонировать проект:
+```bash
+git clone https://github.com/KliuevDmitrii/Mafia.git
+```
 
-### Стек:
+2. Установить зависимости:
+```bash
+pip3 install -r requirements.txt
+```
+
+3. Запустить тесты:
+```bash
+pytest
+```
+
+4. Сгенерировать отчет:
+```bash
+allure generate allure-files -o allure-report
+```
+
+5. Открыть отчет:
+```bash
+allure open allure-report
+```
+
+---
+
+## Стек:
 - pytest
 - selenium
-- webdriver manager 
+- webdriver manager
 - requests
 - allure
 - configparser
 - json
 
-### Струткура:
-- ./test - тесты
-- ./page - описание страниц
-- ./api - хелперы для работы с API
-- ./configuration - провайдер настроек
-    - test_config.ini - настройки для тестов
-- ./testdata - провайдер тестовых данных
-    - test_data.json
+---
 
-### Полезные ссылки
-- [Подсказка по markdown](https://www.markdownguide.org/basic-syntax/)
-- [Генератор файла .gitignore](https://www.toptal.com/developers/gitignore)
+## Структура:
+```
+./test           # тесты
+./pages           # описание страниц
+./api            # хелперы для API
+./configuration  # провайдер настроек
+    └ test_config.ini   # файл настроек
+./testdata       # провайдер тестовых данных
+    └ test_data.json    # тестовые данные
+```
 
+---
 
-### Библиотеки
-- pip3 install pytest
-- pip3 install selenium
-- pip3 install webdriver-manager
-- pip3 install allure-pytest
+## Конфигурационные файлы
+
+### `test_config.ini`
+```
+[ui]  
+base_url=https://dev.ludio.gg/  
+timeout=4  
+
+#chrome | ff
+browser_name=chrome
+
+[api]  
+base_url=https://dev.ludio.gg/api
+```
+
+### `test_data.json`
+```json
+{
+  "INDIVIDUAL": {
+    "email": "vxsmeh@telegmail.com",
+    "pass": "Qwerty",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "ORGANIZATION": {
+    "email": "jfkxwq@hi2.in",
+    "pass": "Qwerty"
+  }
+}
+```
+
+> Файлы `test_config.ini` и `test_data.json` должны быть добавлены в `.gitignore`
+
+---
+
+## Полезные ссылки
+- [Подсказка по Markdown](https://www.markdownguide.org/basic-syntax/)
+- [Генератор .gitignore](https://www.toptal.com/developers/gitignore)
+
+---
+
+## Установка библиотек:
+```bash
+pip3 install pytest
+pip3 install selenium
+pip3 install webdriver-manager
+pip3 install allure-pytest
+```
