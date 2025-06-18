@@ -149,7 +149,7 @@ def test_add_pronouns(browser,  test_data: dict):
 @allure.title("Создание нового юзера с типом персональный без аватара")
 def test_create_new_account_personal_without_avatar(browser):
     email = fake.email()
-    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
     user_name = fake.name()    
 
     signup_page = SignupPage(browser)
@@ -184,7 +184,7 @@ def test_create_new_account_personal_without_avatar(browser):
 @allure.title("Создание нового юзера с типом персональный с аватаром")
 def test_create_new_account_personal_with_avatar(browser):
     email = fake.email()
-    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
     user_name = fake.name()
     avatar_path = '/home/dmitriik/Документы/Mafia/avatar.png'
 
@@ -275,8 +275,8 @@ def test_negative_create_account_invalid_password(browser, password):
 @allure.title("Регистрация с не совпадающими паролями")
 def test_negative_create_account_password_not_match(browser):
     email = fake.email()
-    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
-    password_not_match = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
+    password_not_match = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
 
     signup_page = SignupPage(browser)
 
@@ -326,6 +326,9 @@ def test_invalid_email(browser, email):
     with allure.step("Проверяем отображение ошибки"):
         assert error_text == "Invalid Email Format", f"Ожидали текст ошибки 'Invalid Email Format', получили '{error_text}'"
 
+    with allure.step("Проверяем, что кнопка 'Login' не активна"):
+        assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
+
 @allure.id("Mafia-UI-")
 @allure.title("Авторизация со случайным невалидным email (Faker)")
 def test_invalid_email_faker(browser):
@@ -339,6 +342,9 @@ def test_invalid_email_faker(browser):
     with allure.step("Проверяем отображение ошибки"):
         error_text = login_page.invalid_email_format()
         assert error_text == "Invalid Email Format", f"Ожидали 'Invalid Email Format', получили '{error_text}'"
+
+    with allure.step("Проверяем, что кнопка 'Login' не активна"):
+        assert login_page.find_disabled_login_button(), "Кнопка Login не активна на странице"
 
 # Проверка авторизации с невалидным email
 @allure.id("Mafia-UI-InvalidEmailLogin")

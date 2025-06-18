@@ -104,5 +104,18 @@ class MafiaApi:
             return {"error": f"Ошибка {resp.status_code}: {resp.text}"}
 
         return resp.json() if resp.text else {}
-        
+
+    @allure.step("Отправить запрос на сброс пароля из личного кабинета")
+    def reset_password(self, email):
+        body = {
+            "email": email,
+            "flow": "RESET_PASSWORD"
+        }
+
+        path = f"{self.base_url}/user/sendResetPassword"
+        headers = {"Authorization": f"Bearer {self.token}"}
+
+        resp = requests.post(path, json=body, headers=headers)
+
+        return resp.status_code, resp.json() if resp.text else {}
     

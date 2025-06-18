@@ -329,3 +329,24 @@ def test_negative_create_user_invalid_password(api_client: MafiaApi):
         assert email not in emails_after, (
             f"Пользователь с email {email} был создан, хотя пароль невалидный"
         )
+
+@allure.title("Тест: сброс пароля возвращает статус 201 и поле ok=True")
+def test_reset_password_status_201(authorized_api_client):
+    """
+    Проверка, что при сбросе пароля:
+    - статус ответа = 201
+    - тело ответа содержит {"ok": true}
+    """
+    email = DataProvider().get("INDIVIDUAL")["email"]
+
+    with allure.step(f"Отправка запроса на сброс пароля для {email}"):
+        status_code, response_json = authorized_api_client.reset_password(email)
+
+        allure.attach(str(status_code), name="HTTP Status Code", attachment_type=allure.attachment_type.TEXT)
+        allure.attach(str(response_json), name="Response JSON", attachment_type=allure.attachment_type.JSON)
+
+    with allure.step("Проверка, что статус ответа — 201"):
+        assert status_code == 201, f"Ожидался статус 201, но получен {status_code}"
+
+    with allure.step("Проверка, что тело ответа содержит {'ok': true}"):
+        assert response_json.get("ok") is True, "Ожидалось поле 'ok: true' в теле ответа"
