@@ -52,12 +52,12 @@ class ProfilePage:
                 f"//p[contains(@class, 'DescriptionTextCustom_d16oteua')][contains(text(), 'Username')]/following-sibling::div//input"
                 ))
             )
-        time.sleep(5)  # Не рекомендуется использовать time.sleep, лучше использовать ожидания
-        input_field.clear()  # Очищает поле ввода
         time.sleep(5)
-        input_field.send_keys(new_name)  # Вводит новое имя
+        input_field.clear()
         time.sleep(5)
-        return input_field.get_attribute("value")  # Возвращает введенное значение
+        input_field.send_keys(new_name)
+
+        return input_field.get_attribute("value")
 
     @allure.step("Нажать кнопку Save")
     def click_button_save(self):
@@ -81,10 +81,10 @@ class ProfilePage:
                 f"//p[contains(@class, 'DescriptionTextCustom_d16oteua')][contains(text(), 'Pronouns')]/following-sibling::div//input"
             ))
         )
-        input_field.clear()  # Очищает поле ввода
+        input_field.clear()
         time.sleep(5)
-        input_field.send_keys(pronouns)  # Вводит значение местоимений
-        return input_field.get_attribute("value")  # Возвращает введенное значение
+        input_field.send_keys(pronouns)
+        return input_field.get_attribute("value")
 
     @allure.step("Проверка нового значения в Pronouns")
     def check_user_pronouns(self):
@@ -100,7 +100,7 @@ class ProfilePage:
             pronouns_text = pronouns_element.text
             return pronouns_text
         except TimeoutException:
-            return None  # Возвращает None, если элемент не был найден
+            return None 
 
     @allure.step("Проверить имя пользователя")
     def check_user_name(self):
@@ -146,26 +146,14 @@ class ProfilePage:
         )
         billing_info_tab.click()
 
-    @allure.step("Нажать кнопку Update")
-    def click_button_update(self):
-        """Нажимает кнопку 'Update' для обновления информации о платеже."""
-        time.sleep(3)
-        update_button = WebDriverWait(self.__driver, 20).until(
-            EC.presence_of_element_located((
-                By.XPATH, 
-                "//button[@class='StyledButton_s17mzjxz' and text()='Update']"
-            ))
-        )
-        update_button.click()
-
-    @allure.step("Выбоать план подписки на месяц")
+    @allure.step("Выбрать план подписки на месяц")
     def subscription_plan_monthly(self):
         """Выбирает план подписки на месяц."""
         time.sleep(2)
         monthly = WebDriverWait(self.__driver, 20).until(
             EC.presence_of_element_located((
                 By.XPATH, 
-                '//div[contains(@class, "PlanCardDefault_plevllw") and .//h3[text()="Monthly"]]'
+                '//div[contains(@class, "PlanCardDefault_pualitk") and .//h3[text()="Monthly"]]'
             ))
         )
         monthly.click()
@@ -177,10 +165,49 @@ class ProfilePage:
         annual = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
-                '//div[contains(@class, "PlanCardDefault_plevllw") and .//h3[text()="Annual"]]'
+                '//div[contains(@class, "PlanCardDefault_pualitk") and .//h3[text()="Annual"]]'
             ))
         )
         annual.click()
+
+    @allure.step("Выбрать план подписки каждые 3 месяца")
+    def subscription_plan_every_3_months(self):
+        """Выбирает план подписки каждые 3 месяца."""
+        time.sleep(2)
+        annual = WebDriverWait(self.__driver, 10).until(
+            EC.presence_of_element_located((
+                By.XPATH, 
+                '//div[contains(@class, "PlanCardDefault_pualitk") and .//h3[text()="Every 3 months"]]'
+            ))
+        )
+        annual.click()
+
+    @allure.step("Вернуть сумму подписки на месяц (Monthly)")
+    def get_subscription_amount_monthly(self) -> float | None:
+        return self.__get_subscription_amount_by_plan("Monthly")
+
+    @allure.step("Вернуть сумму подписки на год (Annual)")
+    def get_subscription_amount_annual(self) -> float | None:
+        return self.__get_subscription_amount_by_plan("Annual")
+
+    @allure.step("Вернуть сумму подписки на 3 месяца (Every 3 months)")
+    def get_subscription_amount_quarterly(self) -> float | None:
+        return self.__get_subscription_amount_by_plan("Every 3 months")
+
+    def __get_subscription_amount_by_plan(self, plan_name: str) -> float | None:
+        """Ищет сумму в карточке по имени плана."""
+        try:
+            amount_element = WebDriverWait(self.__driver, 10).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    f'//div[contains(@class, "PlanCardDefault_pualitk") and .//h3[text()="{plan_name}"]]//h4'
+                ))
+            )
+            text = amount_element.text
+            match = re.search(r'\d+(?:\.\d+)?', text)
+            return float(match.group()) if match else None
+        except TimeoutException:
+            return None 
     
     @allure.step("Нажать кнопку Continue")
     def click_button_continue(self):
@@ -188,7 +215,7 @@ class ProfilePage:
         continue_button = WebDriverWait(self.__driver, 10).until(
             EC.presence_of_element_located((
                 By.XPATH, 
-                "//button[@class='ContinueButton_cpp8ujb StyledButton_s17mzjxz' and text()='Continue']"
+                "//button[contains(@class, 'StyledButton_s17mzjxz') and text()='Continue']"
             ))
         )
         continue_button.click()

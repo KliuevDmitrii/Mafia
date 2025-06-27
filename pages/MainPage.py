@@ -17,8 +17,8 @@ class MainPage:
     def __init__(self, driver: WebDriver) -> None:
         # Получение базового URL из конфигурации
         url = ConfigProvider().get("ui", "base_url")
-        self.__url = url  # Устанавливаем URL главной страницы
-        self.__driver = driver  # Инициализируем WebDriver
+        self.__url = url
+        self.__driver = driver
 
     @allure.step("Перейти на главную страницу")
     def go(self):
