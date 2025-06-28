@@ -529,7 +529,7 @@ def test_open_new_tab_strapi(browser):
         
 
 @allure.id("")
-@allure.title("Сравнение суммы подписки на странице профиля и в Stripe Checkout")
+@allure.title("Сравнение суммы месячной подписки на странице профиля и в Stripe Checkout")
 def test_open_new_tab_strapi(browser):
     signup_page = SignupPage(browser)
     main_page = MainPage(browser)
@@ -558,8 +558,6 @@ def test_open_new_tab_strapi(browser):
     amount_from_profile = profile_page.get_subscription_amount_monthly()
     allure.attach(str(amount_from_profile), name="Сумма с profile_page", attachment_type=allure.attachment_type.TEXT)
 
-
-    # Нажимаем "Continue" и ожидаем открытия новой вкладки
     profile_page.subscription_plan_monthly()
     original_tabs = browser.window_handles
     profile_page.click_button_continue()
@@ -585,6 +583,129 @@ def test_open_new_tab_strapi(browser):
         f"Сумма на странице профиля ({amount_from_profile}) "
         f"не совпадает с суммой на Stripe Checkout ({amount_from_stripe})"
     )
+
+@allure.id("")
+@allure.title("Сравнение суммы подписки на 3 месяца на странице профиля и в Stripe Checkout")
+def test_open_new_tab_stripe_every_3_months(browser):
+    signup_page = SignupPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    checkout_page = CheckoutPage(browser)
+
+    email = fake.email()
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
+    user_name = fake.name()
+
+    signup_page.go()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_type_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+
+    main_page.click_avatar_user()
+    profile_page.click_tab_billing_information()
+
+    # Получаем цену за месяц
+    amount_from_profile = float(profile_page.get_subscription_amount_quarterly())
+    allure.attach(str(amount_from_profile), name="Сумма с profile_page (в месяц)", attachment_type=allure.attachment_type.TEXT)
+
+    # Выбираем план "каждые 3 месяца"
+    profile_page.subscription_plan_every_3_months()
+    original_tabs = browser.window_handles
+    profile_page.click_button_continue()
+
+    with allure.step("Ожидаем открытия новой вкладки со Stripe Checkout"):
+        WebDriverWait(browser, 10).until(lambda drv: len(drv.window_handles) > len(original_tabs))
+
+    new_tab = list(set(browser.window_handles) - set(original_tabs))[0]
+
+    with allure.step("Переключаемся на новую вкладку"):
+        browser.switch_to.window(new_tab)
+
+    with allure.step("Проверяем URL новой вкладки"):
+        WebDriverWait(browser, 10).until(EC.url_contains("https://checkout.stripe.com/c/pay"))
+        current_url = browser.current_url
+        allure.attach(current_url, name="Stripe Checkout URL", attachment_type=allure.attachment_type.TEXT)
+        assert current_url.startswith("https://checkout.stripe.com/c/pay"), \
+            f"Ожидался переход на Stripe Checkout, но открыт: {current_url}"
+
+    # Получаем сумму из Stripe
+    amount_from_stripe = checkout_page.get_subscription_amount()
+    allure.attach(str(amount_from_stripe), name="Сумма со Stripe (за 3 месяца)", attachment_type=allure.attachment_type.TEXT)
+
+    expected_amount = round(amount_from_profile * 3, 2)
+
+    assert expected_amount == amount_from_stripe, (
+        f"Ожидалась сумма {expected_amount} на Stripe, но получено {amount_from_stripe}"
+    )
+
+
+@allure.id("")
+@allure.title("Сравнение суммы годовой подписки на странице профиля и в Stripe Checkout")
+def test_open_new_tab_stripe_annual(browser):
+    signup_page = SignupPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    checkout_page = CheckoutPage(browser)
+
+    email = fake.email()
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
+    user_name = fake.name()
+
+    signup_page.go()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_type_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+
+    main_page.click_avatar_user()
+    profile_page.click_tab_billing_information()
+
+    # Получаем сумму за месяц на профиле
+    amount_from_profile = float(profile_page.get_subscription_amount_annual())
+    allure.attach(str(amount_from_profile), name="Сумма с profile_page (в месяц)", attachment_type=allure.attachment_type.TEXT)
+
+    # Выбираем годовую подписку
+    profile_page.subscription_plan_annual()
+    original_tabs = browser.window_handles
+    profile_page.click_button_continue()
+
+    with allure.step("Ожидаем открытия новой вкладки со Stripe Checkout"):
+        WebDriverWait(browser, 10).until(lambda drv: len(drv.window_handles) > len(original_tabs))
+
+    new_tab = list(set(browser.window_handles) - set(original_tabs))[0]
+
+    with allure.step("Переключаемся на новую вкладку"):
+        browser.switch_to.window(new_tab)
+
+    with allure.step("Проверяем URL новой вкладки"):
+        WebDriverWait(browser, 10).until(EC.url_contains("https://checkout.stripe.com/c/pay"))
+        current_url = browser.current_url
+        allure.attach(current_url, name="Stripe Checkout URL", attachment_type=allure.attachment_type.TEXT)
+        assert current_url.startswith("https://checkout.stripe.com/c/pay"), \
+            f"Ожидался переход на Stripe Checkout, но открыт: {current_url}"
+
+    amount_from_stripe = checkout_page.get_subscription_amount()
+    allure.attach(str(amount_from_stripe), name="Сумма со Stripe (в год)", attachment_type=allure.attachment_type.TEXT)
+
+    expected_annual = round(amount_from_profile * 12, 2)
+
+    assert expected_annual == amount_from_stripe, (
+        f"Ожидалась сумма {expected_annual} на Stripe, но получено {amount_from_stripe}"
+    )
+
 
 # Оформление месячной подписки
 @allure.id("")

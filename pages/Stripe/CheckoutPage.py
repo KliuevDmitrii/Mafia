@@ -99,7 +99,6 @@ class CheckoutPage:
             amount_text = amount_element.text.strip()
             allure.attach(amount_text, name="Текст с суммой", attachment_type=allure.attachment_type.TEXT)
 
-            # Приведение к универсальному виду: "9,60 $" → "9.60"
             normalized_amount = amount_text.replace('\xa0', '').replace(',', '.').replace('$', '').strip()
 
             match = re.search(r"(\d{1,3}(?:\.\d{1,2})?)", normalized_amount)
