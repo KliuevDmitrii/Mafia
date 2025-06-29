@@ -18,3 +18,6 @@ class ConfigProvider:
 
     def get_ui_url(self, fallback=""):
         return self.get("ui", "base_url", fallback)
+    
+    def get_social_link(self, key: str, fallback=""):
+        return self.get("social", key, fallback)

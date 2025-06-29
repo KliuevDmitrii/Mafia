@@ -70,7 +70,6 @@ class MainPage:
         Проверяет, существует ли элемент div, содержащий изображение SVG.
         """
         try:
-            # Поиск элемента div с указанными атрибутами
             self.__driver.find_element(By.XPATH, '//div[@width="100%" and @height="100%" and contains(@src, "data:image/svg+xml")]')
             return True
         except NoSuchElementException:
@@ -81,7 +80,10 @@ class MainPage:
         """
         Кликает по кнопке Discord и проверяет открытие новой вкладки с Discord.
         """
-        initial_tabs = self.__driver.window_handles  # Сохраняем список вкладок до клика
+        config = ConfigProvider()
+        expected_url_part = config.get_social_link("discord_url")
+
+        initial_tabs = self.__driver.window_handles
 
         try:
             discord_button = WebDriverWait(self.__driver, 10).until(
@@ -92,16 +94,12 @@ class MainPage:
             )
             discord_button.click()
 
-            # Ожидаем появления новой вкладки
             WebDriverWait(self.__driver, 10).until(lambda driver: len(driver.window_handles) > len(initial_tabs))
 
-            # Переключаемся на новую вкладку
             new_tabs = self.__driver.window_handles
             new_tab = list(set(new_tabs) - set(initial_tabs))[0]
             self.__driver.switch_to.window(new_tab)
 
-            # Проверяем URL
-            expected_url_part = "https://discord.com/invite/VVtX3jwysY"
             current_url = self.__driver.current_url
             assert expected_url_part in current_url, f"Ожидали URL содержащий '{expected_url_part}', получили '{current_url}'"
 
@@ -112,7 +110,6 @@ class MainPage:
             raise AssertionError(f"Ошибка при открытии ссылки Discord: {e}")
 
         finally:
-            # Закрываем новую вкладку и возвращаемся на предыдущую
             if len(self.__driver.window_handles) > len(initial_tabs):
                 self.__driver.close()
                 self.__driver.switch_to.window(initial_tabs[0])
@@ -123,7 +120,11 @@ class MainPage:
         """
         Кликает по кнопке Instagram и проверяет открытие новой вкладки.
         """
-        initial_tabs = self.__driver.window_handles  # Сохраняем список вкладок до клика
+        from configuration.ConfigProvider import ConfigProvider
+        config = ConfigProvider()
+        expected_url_part = config.get_social_link("instagram_url")
+
+        initial_tabs = self.__driver.window_handles
 
         try:
             instagram_button = WebDriverWait(self.__driver, 10).until(
@@ -134,16 +135,12 @@ class MainPage:
             )
             instagram_button.click()
 
-            # Ожидаем появления новой вкладки
             WebDriverWait(self.__driver, 10).until(lambda driver: len(driver.window_handles) > len(initial_tabs))
 
-            # Переключаемся на новую вкладку
             new_tabs = self.__driver.window_handles
             new_tab = list(set(new_tabs) - set(initial_tabs))[0]
             self.__driver.switch_to.window(new_tab)
 
-            # Проверяем URL новой вкладки
-            expected_url_part = "https://www.instagram.com/ludio.fun/"
             current_url = self.__driver.current_url
             assert expected_url_part in current_url, f"Ожидали URL '{expected_url_part}', получили '{current_url}'"
 
@@ -154,7 +151,6 @@ class MainPage:
             raise AssertionError(f"Ошибка при открытии Instagram: {e}")
 
         finally:
-            # Закрываем новую вкладку и возвращаемся на исходную
             if len(self.__driver.window_handles) > len(initial_tabs):
                 self.__driver.close()
                 self.__driver.switch_to.window(initial_tabs[0])
@@ -164,7 +160,11 @@ class MainPage:
         """
         Кликает по кнопке TikTok и проверяет открытие новой вкладки.
         """
-        initial_tabs = self.__driver.window_handles  # Сохраняем список вкладок до клика
+        from configuration.ConfigProvider import ConfigProvider
+        config = ConfigProvider()
+        expected_url_part = config.get_social_link("tiktok_url")
+
+        initial_tabs = self.__driver.window_handles 
 
         try:
             tiktok_button = WebDriverWait(self.__driver, 10).until(
@@ -175,16 +175,12 @@ class MainPage:
             )
             tiktok_button.click()
 
-            # Ожидаем появления новой вкладки
             WebDriverWait(self.__driver, 10).until(lambda driver: len(driver.window_handles) > len(initial_tabs))
 
-            # Переключаемся на новую вкладку
             new_tabs = self.__driver.window_handles
             new_tab = list(set(new_tabs) - set(initial_tabs))[0]
             self.__driver.switch_to.window(new_tab)
 
-            # Проверяем URL новой вкладки
-            expected_url_part = "https://www.tiktok.com/@ludio.gg"
             current_url = self.__driver.current_url
             assert expected_url_part in current_url, f"Ожидали URL '{expected_url_part}', получили '{current_url}'"
 
@@ -195,18 +191,21 @@ class MainPage:
             raise AssertionError(f"Ошибка при открытии TikTok: {e}")
 
         finally:
-            # Закрываем новую вкладку и возвращаемся на исходную
             if len(self.__driver.window_handles) > len(initial_tabs):
                 self.__driver.close()
                 self.__driver.switch_to.window(initial_tabs[0])
 
-        
+
     @allure.step("Кликнуть по кнопке 'YouTube' и проверить открытие новой вкладки")
     def click_youtube_button(self):
         """
         Кликает по кнопке YouTube и проверяет открытие новой вкладки.
         """
-        initial_tabs = self.__driver.window_handles  # Сохраняем список вкладок до клика
+        from configuration.ConfigProvider import ConfigProvider
+        config = ConfigProvider()
+        expected_url_part = config.get_social_link("youtube_url")
+
+        initial_tabs = self.__driver.window_handles  
 
         try:
             youtube_button = WebDriverWait(self.__driver, 10).until(
@@ -217,16 +216,12 @@ class MainPage:
             )
             youtube_button.click()
 
-            # Ожидаем появления новой вкладки
             WebDriverWait(self.__driver, 10).until(lambda driver: len(driver.window_handles) > len(initial_tabs))
 
-            # Переключаемся на новую вкладку
             new_tabs = self.__driver.window_handles
             new_tab = list(set(new_tabs) - set(initial_tabs))[0]
             self.__driver.switch_to.window(new_tab)
 
-            # Проверяем URL новой вкладки
-            expected_url_part = "https://www.youtube.com/@ludio_fun"
             current_url = self.__driver.current_url
             assert expected_url_part in current_url, f"Ожидали URL '{expected_url_part}', получили '{current_url}'"
 
@@ -237,7 +232,6 @@ class MainPage:
             raise AssertionError(f"Ошибка при открытии YouTube: {e}")
 
         finally:
-            # Закрываем новую вкладку и возвращаемся на исходную
             if len(self.__driver.window_handles) > len(initial_tabs):
                 self.__driver.close()
                 self.__driver.switch_to.window(initial_tabs[0])
