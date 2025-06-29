@@ -450,6 +450,32 @@ def test_open_profile_user(browser, email, password):
 
     assert email == profile_page.check_user_email(), "Email в профиле не совпадает с введенным"
 
+# Проверка перехода на страницу соцсетей
+@allure.id("")
+@allure.title("Проверка перехода на страницу соцсетей")
+def test_open_new_tub_with_social_link(browser, test_data: dict):
+    user_data = test_data.get("INDIVIDUAL")
+    if not user_data:
+        pytest.fail("Нет данных для INDIVIDUAL пользователя")
+
+    email = user_data.get("email")
+    password = user_data.get("pass")
+
+    login_page = LoginPage(browser)
+    main_page = MainPage(browser)
+
+    login_page.go()
+    login_page.enter_email(email)
+    login_page.enter_password(password)
+    login_page.click_button_log_in()
+
+    # Проверка каждой соцсети отдельно
+    main_page.click_discord_button()          
+    main_page.click_instagram_button()        
+    main_page.click_tiktok_button()           
+    main_page.click_youtube_button()          
+    
+
 # Проверка на количество оставшихся пропусков для нового юзера
 @allure.title("Проверка на количество оставшихся пропусков для нового юзера")
 @pytest.mark.parametrize("email, password, confirm_password, user_name", [
@@ -706,6 +732,61 @@ def test_open_new_tab_stripe_annual(browser):
         f"Ожидалась сумма {expected_annual} на Stripe, но получено {amount_from_stripe}"
     )
 
+@allure.id("")
+@allure.title("Сравнение email при регистрации и на странице Stripe Checkout")
+def test_email_match_on_stripe(browser):
+    signup_page = SignupPage(browser)
+    main_page = MainPage(browser)
+    profile_page = ProfilePage(browser)
+    checkout_page = CheckoutPage(browser)
+
+    email = fake.email()
+    password = fake.password(length=20, special_chars=True, digits=True, upper_case=True, lower_case=True)
+    user_name = fake.name()
+
+    signup_page.go()
+    signup_page.enter_email(email)
+    signup_page.enter_password(password)
+    signup_page.confirm_password(password)
+    signup_page.click_button_create_account()
+    signup_page.choose_username(user_name)
+    signup_page.account_type_personal()
+    signup_page.on_checkbox_privacy_policy()
+    signup_page.on_checkbox_community_guidelines()
+    signup_page.click_button_continue()
+    signup_page.click_button_continue_without_avatar()
+
+    main_page.click_avatar_user()
+    profile_page.click_tab_billing_information()
+
+    profile_page.subscription_plan_monthly()
+    original_tabs = browser.window_handles
+    profile_page.click_button_continue()
+
+    with allure.step("Ожидаем открытия новой вкладки со Stripe Checkout"):
+        WebDriverWait(browser, 10).until(lambda drv: len(drv.window_handles) > len(original_tabs))
+
+    new_tab = list(set(browser.window_handles) - set(original_tabs))[0]
+
+    with allure.step("Переключаемся на новую вкладку"):
+        browser.switch_to.window(new_tab)
+
+    with allure.step("Проверяем URL новой вкладки"):
+        WebDriverWait(browser, 10).until(EC.url_contains("https://checkout.stripe.com/c/pay"))
+        current_url = browser.current_url
+        allure.attach(current_url, name="Stripe Checkout URL", attachment_type=allure.attachment_type.TEXT)
+        assert current_url.startswith("https://checkout.stripe.com/c/pay"), \
+            f"Ожидался переход на Stripe Checkout, но открыт: {current_url}"
+
+    email_from_stripe = checkout_page.get_user_email()
+
+    allure.attach(email, name="Email при регистрации", attachment_type=allure.attachment_type.TEXT)
+    allure.attach(email_from_stripe, name="Email на Stripe", attachment_type=allure.attachment_type.TEXT)
+
+    assert email.lower() == email_from_stripe.lower(), (
+        f"Email при регистрации '{email}' не совпадает с email на Stripe '{email_from_stripe}'"
+    )
+
 
 # Оформление месячной подписки
 @allure.id("")
@@ -742,14 +823,12 @@ def test_monthly_subscription(browser, card_number, expiry_date, cvc, name_place
     original_tabs = browser.window_handles
     profile_page.click_button_continue()
 
-    # Переход в новую вкладку Stripe Checkout
     WebDriverWait(browser, 10).until(lambda drv: len(drv.window_handles) > len(original_tabs))
     new_tab = list(set(browser.window_handles) - set(original_tabs))[0]
     browser.switch_to.window(new_tab)
 
     checkout_page.select_payment_method_card()
 
-    # Ввод реквизитов карты
     checkout_page.enter_card_details(
         card_number=card_number,
         expiry_date=expiry_date,

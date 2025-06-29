@@ -19,19 +19,25 @@ class CheckoutPage:
     """
      
     def __init__(self, driver: WebDriver) -> None:
-        # Получение базового URL из конфигурации
+        """
+        Получение базового URL из конфигурации
+        """
         url = ConfigProvider().get("ui", "pay_url")
         self.__url = url
         self.__driver = driver
 
     @allure.step("Перейти на страницу оплаты")
     def go(self):
-        # Переход на страницу оплаты
+        """
+        Переход на страницу оплаты
+        """
         self.__driver.get(self.__url)
 
     @allure.step("Получить текущий URL страницы оплаты")
     def get_current_url(self) -> str:
-        # Получение текущего URL страницы оплаты
+        """
+        Получение текущего URL страницы оплаты
+        """
         return self.__driver.current_url
     
     @allure.step("Проверить, что страница оплаты загружена")
@@ -45,14 +51,35 @@ class CheckoutPage:
             return True
         except TimeoutException:
             return False
+        
+    @allure.step("Получить email пользователя из формы Stripe Checkout")
+    def get_user_email(self) -> str:
+        """
+        Возвращает email, отображаемый на форме оплаты Stripe.
+        """
+        try:
+            email_element = WebDriverWait(self.__driver, 10).until(
+                EC.visibility_of_element_located((
+                    By.XPATH,
+                    "//div[contains(@class, 'ReadOnlyFormField-title') and contains(text(), '@')]"
+                ))
+            )
+            email_text = email_element.text.strip()
+            allure.attach(email_text, name="Email на форме Stripe", attachment_type=allure.attachment_type.TEXT)
+            return email_text
+        except TimeoutException:
+            raise Exception("Email не найден на странице Stripe Checkout.")
+
 
     @allure.step("Выбрать метод оплаты 'Карта'")
     def select_payment_method_card(self):
-        # Находит и нажимает кнопку 'Оплатить картой' в основном DOM
+        """
+        Находит и нажимает кнопку 'Оплатить картой'
+        """
         time.sleep(5)
         try:
             card_option = WebDriverWait(self.__driver, 20).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Оплатить картой']"))
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='card-accordion-item-button']"))
             )
             card_option.click()
         except TimeoutException:
@@ -61,7 +88,9 @@ class CheckoutPage:
         
     @allure.step("Ввести данные карты")
     def enter_card_details(self, card_number: str, expiry_date: str, cvc: str, placeholder: str):
-        # Ввод данных карты в соответствующие поля
+        """
+        Ввод данных карты в соответствующие поля
+        """
         card_number_field = self.__driver.find_element(By.XPATH, "//input[@id='cardNumber']")
         expiry_date_field = self.__driver.find_element(By.XPATH, "//input[@id='cardExpiry']")
         cvc_field = self.__driver.find_element(By.XPATH, "//input[@id='cardCvc']")
@@ -81,6 +110,9 @@ class CheckoutPage:
 
     @allure.step("Нажать кнопку 'Подписаться'")
     def click_submit_button(self):
+        """
+        Нажимает кнопку 'Подписаться' на странице Stripe Checkout.
+        """
         WebDriverWait(self.__driver, 10).until(
             EC.element_to_be_clickable((
                 By.XPATH, "//button[.//div[contains(@class, 'SubmitButton-IconContainer')]]"))
@@ -88,7 +120,9 @@ class CheckoutPage:
 
     @allure.step("Получить сумму подписки из Stripe Checkout")
     def get_subscription_amount(self) -> float:
-        """Извлекает сумму подписки на странице Stripe Checkout и возвращает её как float."""
+        """
+        Извлекает сумму подписки на странице Stripe Checkout и возвращает её как float.
+        """
         try:
             amount_element = WebDriverWait(self.__driver, 10).until(
                 EC.visibility_of_element_located((

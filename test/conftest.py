@@ -14,6 +14,11 @@ from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
 from api.MafiaApi import MafiaApi
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 @pytest.fixture
 def browser():
     with allure.step("Открыть и настроить браузер"):
