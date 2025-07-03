@@ -1,6 +1,7 @@
 import allure
 import requests
 import json
+from pathlib import Path
 
 class MafiaApi:
     """
@@ -119,3 +120,48 @@ class MafiaApi:
 
         return resp.status_code, resp.json() if resp.text else {}
     
+    @allure.step("Получить список Stripe Tariffs и сохранить в test_data.json")
+    def get_stripe_tariffs(self):
+        """
+        Получает данные тарифов из Stripe и сохраняет их в test_data.json в блок 'TARIFFS'
+        """
+        path = f"{self.base_url}/subscriptions/currentStripeTariff"
+        headers = {"Authorization": f"Bearer {self.token}"}
+
+        response = requests.get(path, headers=headers)
+
+        allure.attach(str(response.status_code), name="HTTP Status Code", attachment_type=allure.attachment_type.TEXT)
+        allure.attach(response.text, name="Stripe Tariffs Response", attachment_type=allure.attachment_type.JSON)
+
+        if response.status_code != 200:
+            raise AssertionError(f"Ошибка {response.status_code}: {response.text}")
+
+        try:
+            tariffs_data = response.json()
+        except json.JSONDecodeError:
+            raise ValueError(f"Ошибка декодирования JSON. Ответ API: {response.text}")
+
+        file_path = Path(__file__).resolve().parent.parent / "test_data.json"
+
+        
+        with file_path.open("r", encoding="utf-8") as file:
+            current_data = json.load(file)
+
+        current_data["TARIFFS"] = tariffs_data
+
+        with file_path.open("w", encoding="utf-8") as file:
+            json.dump(current_data, file, indent=2, ensure_ascii=False)
+
+        return tariffs_data
+    
+    # @allure.step("Отправить запрос на оформление подписки")
+    # def subscribe(self, customerId, priceId):
+    #     body = {
+    #         'customerId': customerId,
+    #         'priceId': priceId
+    #     }
+    #     path = f"{self.base_url}/subscriptions/getCheckoutSession"
+    #     headers = {"Authorization": f"Bearer {self.token}"}
+    #     resp = requests.post(path, json=body, headers=headers)
+    #     if resp.status_code != 201:
+    #         return {"error": f"Ошибка {resp.status_code}: {resp.text}"}

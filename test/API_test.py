@@ -350,3 +350,32 @@ def test_reset_password_status_201(authorized_api_client):
 
     with allure.step("Проверка, что тело ответа содержит {'ok': true}"):
         assert response_json.get("ok") is True, "Ожидалось поле 'ok: true' в теле ответа"
+
+@allure.title("Получение тарифов Stripe возвращает статус 200 и все ожидаемые поля")
+def test_get_stripe_tariffs_status_and_fields(authorized_api_client):
+    """
+    Проверка, что при получении тарифов Stripe:
+    - статус ответа = 200
+    - тело ответа содержит все ожидаемые поля
+    """
+    with allure.step("Отправка запроса на получение тарифов Stripe"):
+        data = authorized_api_client.get_stripe_tariffs()
+
+        allure.attach(str(data), name="Stripe Tariffs Response", attachment_type=allure.attachment_type.JSON)
+
+    with allure.step("Проверка, что ответ содержит все ключи"):
+        expected_keys = [
+            "everyDayStripePriceId",
+            "monthStripePriceId",
+            "quarterStripePriceId",
+            "annualStripePriceId",
+            "everyDayStripePrice",
+            "monthStripePrice",
+            "quarterStripePrice",
+            "annualStripePrice",
+            "dayPassStripePrice",
+            "guestPassStripePrice"
+        ]
+
+        missing_keys = [key for key in expected_keys if key not in data]
+        assert not missing_keys, f"В ответе отсутствуют ключи: {missing_keys}"

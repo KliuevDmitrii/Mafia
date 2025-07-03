@@ -76,7 +76,7 @@ class CheckoutPage:
         """
         Находит и нажимает кнопку 'Оплатить картой'
         """
-        time.sleep(5)
+        time.sleep(2)
         try:
             card_option = WebDriverWait(self.__driver, 20).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='card-accordion-item-button']"))
