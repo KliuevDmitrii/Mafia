@@ -1,5 +1,6 @@
 import json
 
+
 my_file = open('test_data.json')
 global_data = json.load(my_file)
 
@@ -22,3 +23,29 @@ class DataProvider:
     def get_token(self) -> str:
         """Получить токен."""
         return self.get("token")
+    
+    def set_customer_id(self, customer_id: str):
+        """Сохраняет customer_id в файл test_data.json в секцию STRIPE"""
+        self.data.setdefault("STRIPE", {})["customer_id"] = customer_id
+        with open(self.file_path, "w", encoding="utf-8") as f:
+            json.dump(self.data, f, indent=2, ensure_ascii=False)
+
+    def get_stripe_token(self) -> str:
+        """Получить токен для Stripe."""
+        return self.data.get("STRIPE", {}).get("token", "")
+    
+    def get_every_day_price_id(self) -> str:
+        """Получить priceId для ежедневного тарифа."""
+        return self.data["TARIFFS"]["everyDayStripePriceId"]
+
+    def get_month_price_id(self) -> str:
+        """Получить priceId для ежемесячного тарифа."""
+        return self.data["TARIFFS"]["monthStripePriceId"]
+
+    def get_quarter_price_id(self) -> str:
+        """Получить priceId для ежеквартального тарифа."""
+        return self.data["TARIFFS"]["quarterStripePriceId"]
+
+    def get_annual_price_id(self) -> str:
+        """Получить priceId для годового тарифа."""
+        return self.data["TARIFFS"]["annualStripePriceId"]

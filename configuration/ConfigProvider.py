@@ -21,3 +21,9 @@ class ConfigProvider:
     
     def get_social_link(self, key: str, fallback=""):
         return self.get("social", key, fallback)
+    
+    def get_api_stripe_url(self, section: str, key: str, fallback=None) -> str:
+        try:
+            return self.config.get(section, key, fallback=fallback)
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return fallback

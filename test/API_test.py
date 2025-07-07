@@ -1,7 +1,11 @@
 import allure
 import pytest
+import json
+
 from faker import Faker
+
 from api.MafiaApi import MafiaApi
+from api.StripeApi import StripeApi
 from testdata.DataProvider import DataProvider
 
 fake = Faker()
@@ -42,6 +46,36 @@ def test_create_user_individual(api_client: MafiaApi):
         assert last_user["email"] == email, (
             f"Email не совпадает! Ожидалось: {email}, Получено: {last_user['email']}"
         )
+
+@allure.title("Проверка появления нового пользователя в Stripe по email")
+def test_created_user_exists_in_stripe(api_client: MafiaApi, stripe_api: StripeApi):
+    """
+    Тест проверяет, что созданный пользователь с типом INDIVIDUAL
+    появляется в системе Stripe с тем же email.
+    """
+    account_type = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    with allure.step(f"Создание нового пользователя: {email}"):
+        api_client.create_user(account_type, email, name, password)
+
+
+    allure.attach(email, name="Созданный email", attachment_type=allure.attachment_type.TEXT)
+
+    with allure.step(f"Поиск пользователя в Stripe по email: {email}"):
+        stripe_response = stripe_api.create_customer(email)
+        allure.attach(
+            json.dumps(stripe_response, indent=2, ensure_ascii=False),
+            name="Stripe Response",
+            attachment_type=allure.attachment_type.JSON
+        )
+
+        with allure.step("Проверка email в ответе от Stripe"):
+            assert "email" in stripe_response, "В ответе от Stripe нет поля email"
+            stripe_email = stripe_response["email"]
+            assert stripe_email == email, f"Ожидался email {email}, а получен {stripe_email}"
 
 @allure.title("Тест создания пользователя с типом ORGANIZATION")
 def test_create_user_organization(api_client: MafiaApi):
@@ -331,7 +365,7 @@ def test_negative_create_user_invalid_password(api_client: MafiaApi):
         )
 
 @allure.title("Тест: сброс пароля возвращает статус 201 и поле ok=True")
-def test_reset_password_status_201(authorized_api_client):
+def test_reset_password_status_201(authorized_api_client: MafiaApi):
     """
     Проверка, что при сбросе пароля:
     - статус ответа = 201
@@ -352,7 +386,7 @@ def test_reset_password_status_201(authorized_api_client):
         assert response_json.get("ok") is True, "Ожидалось поле 'ok: true' в теле ответа"
 
 @allure.title("Получение тарифов Stripe возвращает статус 200 и все ожидаемые поля")
-def test_get_stripe_tariffs_status_and_fields(authorized_api_client):
+def test_get_stripe_tariffs_status_and_fields(authorized_api_client: MafiaApi):
     """
     Проверка, что при получении тарифов Stripe:
     - статус ответа = 200
@@ -379,3 +413,86 @@ def test_get_stripe_tariffs_status_and_fields(authorized_api_client):
 
         missing_keys = [key for key in expected_keys if key not in data]
         assert not missing_keys, f"В ответе отсутствуют ключи: {missing_keys}"
+
+@allure.title("Проверка получения данных из Stripe по email пользователя из test_data.json")
+def test_get_stripe_customer_by_email(authorized_api_client: MafiaApi, stripe_api: StripeApi):
+    """
+    Тест проверяет, что у существующего пользователя INDIVIDUAL (из test_data.json)
+    данные в Stripe корректны (присутствуют поля 'id' и 'email').
+    """
+
+    user_email = DataProvider().get("INDIVIDUAL")["email"]
+
+    with allure.step("Получение списка пользователей из Ludio API"):
+        users = authorized_api_client.get_users()
+        assert users, "Список пользователей пуст"
+
+    target_user = next((u for u in users if u["email"] == user_email), None)
+    assert target_user is not None, f"Пользователь {user_email} не найден в API"
+
+    allure.attach(json.dumps(target_user, indent=2, ensure_ascii=False), name="API User Info",
+                  attachment_type=allure.attachment_type.JSON)
+
+    with allure.step(f"Поиск пользователя в Stripe по email: {user_email}"):
+        stripe_response = stripe_api.search_customer_by_email(user_email)
+        allure.attach(
+            json.dumps(stripe_response, indent=2, ensure_ascii=False),
+            name="Stripe Response",
+            attachment_type=allure.attachment_type.JSON
+        )
+
+        assert stripe_response.get("data"), f"Пользователь {user_email} не найден в Stripe"
+        customer = stripe_response["data"][0]
+
+    with allure.step("Проверка наличия поля 'id' у клиента"):
+        assert "id" in customer, "Поле 'id' отсутствует в ответе Stripe"
+        assert customer["id"].startswith("cus_"), f"Некорректный ID: {customer['id']}"
+
+    with allure.step("Проверка совпадения поля 'email'"):
+        assert customer["email"] == user_email, f"Email в Stripe: {customer['email']} не совпадает с API: {user_email}"
+
+@allure.title("Проверка оформления годовой подписки новым пользователем")
+def test_annual_subscription_checkout(api_client: MafiaApi, stripe_api: StripeApi, annual_price_id: str):
+    """
+    Тест проверяет оформление годовой подписки:
+    1. Создание пользователя в системе
+    2. Создание клиента в Stripe
+    3. Авторизация нового пользователя
+    4. Запрос на оформление подписки
+    5. Проверка ответа: код, структура, URL
+    """
+
+    account_type = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    with allure.step(f"Создание нового пользователя: {email}"):
+        create_resp = api_client.create_user(account_type, email, name, password)
+        allure.attach(json.dumps(create_resp, indent=2, ensure_ascii=False), "Создание пользователя", allure.attachment_type.JSON)
+
+    with allure.step("Авторизация нового пользователя"):
+        auth_resp = api_client.auth_user(email, password)
+        allure.attach(json.dumps(auth_resp, indent=2, ensure_ascii=False), "Ответ авторизации", allure.attachment_type.JSON)
+        access_token = auth_resp.get("accessToken")
+        assert access_token, f"Авторизация не удалась для email: {email}"
+
+        authorized_client = MafiaApi(api_client.base_url, token=access_token)
+
+    with allure.step(f"Создание клиента в Stripe: {email}"):
+        customer_response = stripe_api.create_customer(email)
+        allure.attach(json.dumps(customer_response, indent=2, ensure_ascii=False), "Stripe create_customer", allure.attachment_type.JSON)
+        customer_id = customer_response.get("id")
+        assert customer_id, "customer_id не получен из ответа Stripe"
+
+    with allure.step("Запрос на оформление годовой подписки"):
+        subscription_response = authorized_client.subscribe(customer_id, annual_price_id)
+        allure.attach(json.dumps(subscription_response, indent=2, ensure_ascii=False), "Subscription Response", allure.attachment_type.JSON)
+
+        assert isinstance(subscription_response, dict), f"Ожидался dict, а получен {type(subscription_response)}"
+        assert "url" in subscription_response, "Ключ 'url' отсутствует в ответе"
+
+        url = subscription_response["url"]
+        assert url, "Значение 'url' пустое"
+        assert "checkout.stripe.com" in url, f"Некорректный домен в URL: {url}"
+        assert url.startswith("https://checkout.stripe.com/"), f"URL не начинается с нужного префикса: {url}"

@@ -13,6 +13,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
 from api.MafiaApi import MafiaApi
+from api.StripeApi import StripeApi
 
 import sys
 import os
@@ -90,3 +91,32 @@ def authorized_api_client():
         token = auth_response["accessToken"]
 
     return MafiaApi(base_url, token=token)
+
+@pytest.fixture
+def stripe_api():
+    config = ConfigProvider()
+    data_provider = DataProvider()
+    stripe_url = config.get("api", "base_stripe_url")
+
+    assert stripe_url, "base_stripe_url не найден в test_config.ini"
+
+    return StripeApi(
+        stripe_url,
+        data_provider.get_stripe_token()
+    )
+
+@pytest.fixture
+def annual_price_id():
+    return DataProvider().get_annual_price_id()
+
+@pytest.fixture
+def month_price_id():
+    return DataProvider().get_month_price_id()
+
+@pytest.fixture
+def quarter_price_id():
+    return DataProvider().get_quarter_price_id()
+
+@pytest.fixture
+def every_day_price_id():
+    return DataProvider().get_every_day_price_id()

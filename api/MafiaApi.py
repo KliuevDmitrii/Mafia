@@ -154,14 +154,17 @@ class MafiaApi:
 
         return tariffs_data
     
-    # @allure.step("Отправить запрос на оформление подписки")
-    # def subscribe(self, customerId, priceId):
-    #     body = {
-    #         'customerId': customerId,
-    #         'priceId': priceId
-    #     }
-    #     path = f"{self.base_url}/subscriptions/getCheckoutSession"
-    #     headers = {"Authorization": f"Bearer {self.token}"}
-    #     resp = requests.post(path, json=body, headers=headers)
-    #     if resp.status_code != 201:
-    #         return {"error": f"Ошибка {resp.status_code}: {resp.text}"}
+    @allure.step("Отправить запрос на оформление подписки")
+    def subscribe(self, customerId, priceId):
+        body = {
+            'customerId': customerId,
+            'priceId': priceId
+        }
+        path = f"{self.base_url}/subscriptions/getCheckoutSession"
+        headers = {"Authorization": f"Bearer {self.token}"}
+        resp = requests.post(path, json=body, headers=headers)
+
+        if resp.status_code != 201:
+            return {"error": f"Ошибка {resp.status_code}: {resp.text}"}
+
+        return resp.json() 
