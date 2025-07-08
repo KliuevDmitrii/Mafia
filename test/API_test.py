@@ -452,16 +452,19 @@ def test_get_stripe_customer_by_email(authorized_api_client: MafiaApi, stripe_ap
         assert customer["email"] == user_email, f"Email в Stripe: {customer['email']} не совпадает с API: {user_email}"
 
 @allure.title("Проверка оформления годовой подписки новым пользователем")
-def test_annual_subscription_checkout(api_client: MafiaApi, stripe_api: StripeApi, annual_price_id: str):
+def test_annual_subscription_checkout(api_client: MafiaApi, stripe_api: StripeApi, test_data: DataProvider):
     """
     Тест проверяет оформление годовой подписки:
     1. Создание пользователя в системе
-    2. Создание клиента в Stripe
-    3. Авторизация нового пользователя
-    4. Запрос на оформление подписки
-    5. Проверка ответа: код, структура, URL
+    2. Авторизация нового пользователя
+    3. Обновление тарифов через API и сохранение в test_data.json
+    4. Получение актуального priceId из файла
+    5. Создание клиента в Stripe
+    6. Запрос на оформление подписки
+    7. Проверка корректности ответа
     """
 
+    # Шаг 1: Данные нового пользователя
     account_type = "INDIVIDUAL"
     email = fake.email()
     name = fake.name()
@@ -469,26 +472,214 @@ def test_annual_subscription_checkout(api_client: MafiaApi, stripe_api: StripeAp
 
     with allure.step(f"Создание нового пользователя: {email}"):
         create_resp = api_client.create_user(account_type, email, name, password)
-        allure.attach(json.dumps(create_resp, indent=2, ensure_ascii=False), "Создание пользователя", allure.attachment_type.JSON)
+        allure.attach(json.dumps(create_resp, indent=2, ensure_ascii=False),
+                      name="Создание пользователя",
+                      attachment_type=allure.attachment_type.JSON)
 
+    # Шаг 2: Авторизация
     with allure.step("Авторизация нового пользователя"):
         auth_resp = api_client.auth_user(email, password)
-        allure.attach(json.dumps(auth_resp, indent=2, ensure_ascii=False), "Ответ авторизации", allure.attachment_type.JSON)
+        allure.attach(json.dumps(auth_resp, indent=2, ensure_ascii=False),
+                      name="Ответ авторизации",
+                      attachment_type=allure.attachment_type.JSON)
+
         access_token = auth_resp.get("accessToken")
         assert access_token, f"Авторизация не удалась для email: {email}"
 
+        # Авторизованный клиент с токеном
         authorized_client = MafiaApi(api_client.base_url, token=access_token)
 
+    # Шаг 3: Получение и сохранение актуальных тарифов
+    with allure.step("Обновление тарифов в test_data.json через API"):
+        response = authorized_client.get_stripe_tariffs()
+
+        assert isinstance(response, dict), "Ответ должен быть словарём"
+        assert "annualStripePriceId" in response, "В ответе нет annualStripePriceId"
+        allure.attach(json.dumps(response, indent=2, ensure_ascii=False),
+                    name="Обновлённые тарифы",
+                    attachment_type=allure.attachment_type.JSON)
+
+    # Шаг 4: Получение актуального priceId из файла
+    with allure.step("Получение актуального annual_price_id"):
+        annual_price_id = test_data.get_annual_price_id()
+        assert annual_price_id.startswith("price_"), f"Некорректный priceId: {annual_price_id}"
+
+    # Шаг 5: Создание клиента в Stripe
     with allure.step(f"Создание клиента в Stripe: {email}"):
         customer_response = stripe_api.create_customer(email)
-        allure.attach(json.dumps(customer_response, indent=2, ensure_ascii=False), "Stripe create_customer", allure.attachment_type.JSON)
+        allure.attach(json.dumps(customer_response, indent=2, ensure_ascii=False),
+                      name="Stripe create_customer",
+                      attachment_type=allure.attachment_type.JSON)
+
         customer_id = customer_response.get("id")
         assert customer_id, "customer_id не получен из ответа Stripe"
 
+    # Шаг 6: Запрос на оформление подписки
     with allure.step("Запрос на оформление годовой подписки"):
         subscription_response = authorized_client.subscribe(customer_id, annual_price_id)
-        allure.attach(json.dumps(subscription_response, indent=2, ensure_ascii=False), "Subscription Response", allure.attachment_type.JSON)
+        allure.attach(json.dumps(subscription_response, indent=2, ensure_ascii=False),
+                      name="Subscription Response",
+                      attachment_type=allure.attachment_type.JSON)
 
+        # Шаг 7: Проверки
+        assert isinstance(subscription_response, dict), f"Ожидался dict, а получен {type(subscription_response)}"
+        assert "url" in subscription_response, "Ключ 'url' отсутствует в ответе"
+
+        url = subscription_response["url"]
+        assert url, "Значение 'url' пустое"
+        assert "checkout.stripe.com" in url, f"Некорректный домен в URL: {url}"
+        assert url.startswith("https://checkout.stripe.com/"), f"URL не начинается с нужного префикса: {url}"
+
+@allure.title("Проверка оформления месячной подписки новым пользователем")
+def test_month_price_id_subscription_checkout(api_client: MafiaApi, stripe_api: StripeApi, test_data: DataProvider):
+    """
+    Тест проверяет оформление месячной подписки:
+    1. Создание пользователя в системе
+    2. Авторизация нового пользователя
+    3. Обновление тарифов через API и сохранение в test_data.json
+    4. Получение актуального priceId из файла
+    5. Создание клиента в Stripe
+    6. Запрос на оформление подписки
+    7. Проверка корректности ответа
+    """
+
+    # Шаг 1: Данные нового пользователя
+    account_type = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    with allure.step(f"Создание нового пользователя: {email}"):
+        create_resp = api_client.create_user(account_type, email, name, password)
+        allure.attach(json.dumps(create_resp, indent=2, ensure_ascii=False),
+                      name="Создание пользователя",
+                      attachment_type=allure.attachment_type.JSON)
+
+    # Шаг 2: Авторизация
+    with allure.step("Авторизация нового пользователя"):
+        auth_resp = api_client.auth_user(email, password)
+        allure.attach(json.dumps(auth_resp, indent=2, ensure_ascii=False),
+                      name="Ответ авторизации",
+                      attachment_type=allure.attachment_type.JSON)
+
+        access_token = auth_resp.get("accessToken")
+        assert access_token, f"Авторизация не удалась для email: {email}"
+
+        # Авторизованный клиент с токеном
+        authorized_client = MafiaApi(api_client.base_url, token=access_token)
+
+    # Шаг 3: Получение и сохранение актуальных тарифов
+    with allure.step("Обновление тарифов в test_data.json через API"):
+        response = authorized_client.get_stripe_tariffs()
+
+        assert isinstance(response, dict), "Ответ должен быть словарём"
+        assert "monthStripePriceId" in response, "В ответе нет monthStripePriceId"
+        allure.attach(json.dumps(response, indent=2, ensure_ascii=False),
+                    name="Обновлённые тарифы",
+                    attachment_type=allure.attachment_type.JSON)
+
+    # Шаг 4: Получение актуального priceId из файла
+    with allure.step("Получение актуального month_price_id"):
+        month_price_id = test_data.get_annual_price_id()
+        assert month_price_id.startswith("price_"), f"Некорректный priceId: {month_price_id}"
+
+    # Шаг 5: Создание клиента в Stripe
+    with allure.step(f"Создание клиента в Stripe: {email}"):
+        customer_response = stripe_api.create_customer(email)
+        allure.attach(json.dumps(customer_response, indent=2, ensure_ascii=False),
+                      name="Stripe create_customer",
+                      attachment_type=allure.attachment_type.JSON)
+
+        customer_id = customer_response.get("id")
+        assert customer_id, "customer_id не получен из ответа Stripe"
+
+    # Шаг 6: Запрос на оформление подписки
+    with allure.step("Запрос на оформление месячной подписки"):
+        subscription_response = authorized_client.subscribe(customer_id, month_price_id)
+        allure.attach(json.dumps(subscription_response, indent=2, ensure_ascii=False),
+                      name="Subscription Response",
+                      attachment_type=allure.attachment_type.JSON)
+
+        # Шаг 7: Проверки
+        assert isinstance(subscription_response, dict), f"Ожидался dict, а получен {type(subscription_response)}"
+        assert "url" in subscription_response, "Ключ 'url' отсутствует в ответе"
+
+        url = subscription_response["url"]
+        assert url, "Значение 'url' пустое"
+        assert "checkout.stripe.com" in url, f"Некорректный домен в URL: {url}"
+        assert url.startswith("https://checkout.stripe.com/"), f"URL не начинается с нужного префикса: {url}"
+
+@allure.title("Проверка оформления квартальной подписки новым пользователем")
+def test_quarter_price_id_subscription_checkout(api_client: MafiaApi, stripe_api: StripeApi, test_data: DataProvider):
+    """
+    Тест проверяет оформление квартальной подписки:
+    1. Создание пользователя в системе
+    2. Авторизация нового пользователя
+    3. Обновление тарифов через API и сохранение в test_data.json
+    4. Получение актуального priceId из файла
+    5. Создание клиента в Stripe
+    6. Запрос на оформление подписки
+    7. Проверка корректности ответа
+    """
+
+    # Шаг 1: Данные нового пользователя
+    account_type = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    with allure.step(f"Создание нового пользователя: {email}"):
+        create_resp = api_client.create_user(account_type, email, name, password)
+        allure.attach(json.dumps(create_resp, indent=2, ensure_ascii=False),
+                      name="Создание пользователя",
+                      attachment_type=allure.attachment_type.JSON)
+
+    # Шаг 2: Авторизация
+    with allure.step("Авторизация нового пользователя"):
+        auth_resp = api_client.auth_user(email, password)
+        allure.attach(json.dumps(auth_resp, indent=2, ensure_ascii=False),
+                      name="Ответ авторизации",
+                      attachment_type=allure.attachment_type.JSON)
+
+        access_token = auth_resp.get("accessToken")
+        assert access_token, f"Авторизация не удалась для email: {email}"
+
+        # Авторизованный клиент с токеном
+        authorized_client = MafiaApi(api_client.base_url, token=access_token)
+
+    # Шаг 3: Получение и сохранение актуальных тарифов
+    with allure.step("Обновление тарифов в test_data.json через API"):
+        response = authorized_client.get_stripe_tariffs()
+
+        assert isinstance(response, dict), "Ответ должен быть словарём"
+        assert "quarterStripePriceId" in response, "В ответе нет quarterStripePriceId"
+        allure.attach(json.dumps(response, indent=2, ensure_ascii=False),
+                    name="Обновлённые тарифы",
+                    attachment_type=allure.attachment_type.JSON)
+
+    # Шаг 4: Получение актуального priceId из файла
+    with allure.step("Получение актуального month_price_id"):
+        quarter_price_id = test_data.get_annual_price_id()
+        assert quarter_price_id.startswith("price_"), f"Некорректный priceId: {quarter_price_id}"
+
+    # Шаг 5: Создание клиента в Stripe
+    with allure.step(f"Создание клиента в Stripe: {email}"):
+        customer_response = stripe_api.create_customer(email)
+        allure.attach(json.dumps(customer_response, indent=2, ensure_ascii=False),
+                      name="Stripe create_customer",
+                      attachment_type=allure.attachment_type.JSON)
+
+        customer_id = customer_response.get("id")
+        assert customer_id, "customer_id не получен из ответа Stripe"
+
+    # Шаг 6: Запрос на оформление подписки
+    with allure.step("Запрос на оформление месячной подписки"):
+        subscription_response = authorized_client.subscribe(customer_id, quarter_price_id)
+        allure.attach(json.dumps(subscription_response, indent=2, ensure_ascii=False),
+                      name="Subscription Response",
+                      attachment_type=allure.attachment_type.JSON)
+
+        # Шаг 7: Проверки
         assert isinstance(subscription_response, dict), f"Ожидался dict, а получен {type(subscription_response)}"
         assert "url" in subscription_response, "Ключ 'url' отсутствует в ответе"
 
