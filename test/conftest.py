@@ -102,7 +102,8 @@ def stripe_api():
 
     return StripeApi(
         stripe_url,
-        data_provider.get_stripe_token()
+        data_provider.get_stripe_token(),
+        data_provider.get_stripe_key()
     )
 
 @pytest.fixture
@@ -120,3 +121,10 @@ def quarter_price_id():
 @pytest.fixture
 def every_day_price_id():
     return DataProvider().get_every_day_price_id()
+
+@pytest.fixture
+def card_data():
+    raw = DataProvider().get_card_data("default")
+    raw["exp_month"] = int(raw["exp_month"])
+    raw["exp_year"] = int(raw["exp_year"])
+    return raw

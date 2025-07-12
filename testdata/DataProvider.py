@@ -34,6 +34,10 @@ class DataProvider:
         """Получить токен для Stripe."""
         return self.data.get("STRIPE", {}).get("token", "")
     
+    def get_stripe_key(self) -> str:
+        """Получить ключ для Stripe."""
+        return self.data.get("STRIPE", {}).get("key", "")
+    
     def get_every_day_price_id(self) -> str:
         """Получить priceId для ежедневного тарифа."""
         return self.data["TARIFFS"]["everyDayStripePriceId"]
@@ -49,3 +53,9 @@ class DataProvider:
     def get_annual_price_id(self) -> str:
         """Получить priceId для годового тарифа."""
         return self.data["TARIFFS"]["annualStripePriceId"]
+    
+    def get_card_data(self, card_type: str = "default") -> dict:
+        """Получить данные карты по типу."""
+        card = self.data.get("CARD_DATA", {}).get(card_type)
+        assert card is not None, f"Карта с типом '{card_type}' не найдена в test_data.json"
+        return card

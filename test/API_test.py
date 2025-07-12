@@ -687,3 +687,54 @@ def test_quarter_price_id_subscription_checkout(api_client: MafiaApi, stripe_api
         assert url, "Значение 'url' пустое"
         assert "checkout.stripe.com" in url, f"Некорректный домен в URL: {url}"
         assert url.startswith("https://checkout.stripe.com/"), f"URL не начинается с нужного префикса: {url}"
+
+@allure.title("Проверка создания платёжного метода (карты) в Stripe")
+def test_create_payment_method_with_new_user(api_client: MafiaApi, stripe_api: StripeApi, card_data: dict):
+    """
+    Тест проверяет:
+    1. Создание нового пользователя
+    2. Авторизацию
+    3. Создание payment_method в Stripe
+    4. Проверку кода ответа и основных полей
+    """
+
+    # Шаг 1: Данные нового пользователя
+    account_type = "INDIVIDUAL"
+    email = fake.email()
+    name = fake.name()
+    password = fake.password(length=20, special_chars=False, digits=True, upper_case=True, lower_case=True)
+
+    with allure.step(f"Создание пользователя {email}"):
+        create_resp = api_client.create_user(account_type, email, name, password)
+        allure.attach(json.dumps(create_resp, indent=2), name="Ответ создания пользователя", attachment_type=allure.attachment_type.JSON)
+
+    with allure.step("Авторизация пользователя"):
+        auth_resp = api_client.auth_user(email, password)
+        allure.attach(json.dumps(auth_resp, indent=2), name="Ответ авторизации", attachment_type=allure.attachment_type.JSON)
+        token = auth_resp.get("accessToken")
+        assert token, "Не получен токен после авторизации"
+        authorized_client = MafiaApi(api_client.base_url, token=token)
+
+    with allure.step("Создание payment method в Stripe"):
+        response = stripe_api.create_payment_method(card_data, name, email)
+
+        allure.attach(json.dumps(response, indent=2), name="Ответ Stripe create_payment_method", attachment_type=allure.attachment_type.JSON)
+
+        # Проверка структуры
+        assert isinstance(response, dict), "Ответ не является словарём"
+        assert response.get("id", "").startswith("pm_"), "Некорректный id платёжного метода"
+        assert response.get("object") == "payment_method", "object != 'payment_method'"
+        assert response.get("type") == "card", "Тип платёжного метода не 'card'"
+
+        # billing_details
+        billing = response.get("billing_details", {})
+        assert billing.get("name") == name, "Имя в billing_details не совпадает"
+        assert billing.get("email") == email, "Email в billing_details не совпадает"
+        assert billing.get("address", {}).get("country") == card_data.get("country"), "Страна не совпадает"
+
+        # card
+        card = response.get("card", {})
+        assert card.get("brand") == "visa", "Ожидался бренд 'visa'"
+        assert card.get("exp_month") == card_data.get("exp_month"), "exp_month не совпадает"
+        assert card.get("exp_year") == card_data.get("exp_year"), "exp_year не совпадает"
+        assert card.get("last4") == "4242", "Ожидались последние 4 цифры 4242"
