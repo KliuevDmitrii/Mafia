@@ -10,6 +10,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+from sshtunnel import SSHTunnelForwarder
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from configuration.ConfigProvider import ConfigProvider
 from testdata.DataProvider import DataProvider
 from api.MafiaApi import MafiaApi
@@ -128,3 +132,44 @@ def card_data():
     raw["exp_month"] = int(raw["exp_month"])
     raw["exp_year"] = int(raw["exp_year"])
     return raw
+
+@pytest.fixture(scope="session")
+def db_session():
+    """
+    Создаёт сессию SQLAlchemy с туннелем SSH для доступа к PostgreSQL.
+    """
+    config = ConfigProvider()
+
+    ssh_host = config.get_ssh_host()
+    ssh_port = config.get_ssh_port()
+    ssh_username = config.get_ssh_username()
+    ssh_password = config.get_ssh_password()
+    db_url = config.get_db_connection_string()
+
+    assert all([ssh_host, ssh_port, ssh_username, ssh_password, db_url]), "Неполные настройки SSH или DB"
+
+    # Параметры из строки подключения
+    import re
+    match = re.search(r"@([^:/]+):(\d+)/", db_url)
+    assert match, "Не удалось распарсить хост и порт из строки подключения"
+    remote_host = match.group(1)
+    remote_port = int(match.group(2))
+
+    with SSHTunnelForwarder(
+        (ssh_host, ssh_port),
+        ssh_username=ssh_username,
+        ssh_password=ssh_password,
+        remote_bind_address=(remote_host, remote_port),
+        local_bind_address=("127.0.0.1",),
+    ) as tunnel:
+        local_port = tunnel.local_bind_port
+        updated_url = db_url.replace(f"{remote_host}:{remote_port}", f"127.0.0.1:{local_port}")
+
+        engine = create_engine(updated_url)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        yield session
+
+        session.close()
+        engine.dispose()

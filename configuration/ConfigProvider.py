@@ -27,3 +27,18 @@ class ConfigProvider:
             return self.config.get(section, key, fallback=fallback)
         except (configparser.NoSectionError, configparser.NoOptionError):
             return fallback
+        
+    def get_db_connection_string(self, fallback=None) -> str:
+        return self.get("db", "db_connection_string", fallback)
+    
+    def get_ssh_host(self) -> str:
+        return self.get("ssh", "host", "")
+
+    def get_ssh_port(self) -> int:
+        return self.getint("ssh", "port", 22)
+
+    def get_ssh_username(self) -> str:
+        return self.get("ssh", "username", "")
+
+    def get_ssh_password(self) -> str:
+        return self.get("ssh", "password", "")

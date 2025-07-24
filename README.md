@@ -36,14 +36,16 @@ allure open allure-report
 - allure
 - configparser
 - json
+- sqlalchemy
 
 ---
 
 ## Структура:
 ```
 ./test           # тесты
-./pages           # описание страниц
+./pages          # описание страниц
 ./api            # хелперы для API
+./db             # хелперы для DB
 ./configuration  # провайдер настроек
     └ test_config.ini   # файл настроек
 ./testdata       # провайдер тестовых данных
@@ -67,19 +69,29 @@ brave_path=/usr/bin/brave-browser
 
 [api]  
 base_url=https://dev.ludio.gg/api
+base_stripe_url=https://api.stripe.com/v1
+
+[db]
+db_connection_string=connection_string
+
+[ssh]
+host=host
+port=port
+username=name
+password=password
 ```
 
 ### `test_data.json`
 ```json
 {
   "INDIVIDUAL": {
-    "email": "vxsmeh@telegmail.com",
-    "pass": "Qwerty",
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "email": "example@example.com",
+    "pass": "yourpassword",
+    "accessToken": "yourtoken"
   },
   "ORGANIZATION": {
-    "email": "jfkxwq@hi2.in",
-    "pass": "Qwerty"
+    "email": "example@example.com",
+    "pass": "yourpassword"
   }
 }
 ```
@@ -100,4 +112,5 @@ pip3 install pytest
 pip3 install selenium
 pip3 install webdriver-manager
 pip3 install allure-pytest
+pip install bcrypt
 ```
